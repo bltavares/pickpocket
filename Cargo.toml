@@ -1,0 +1,7 @@
+[package]
+authors = ["Bruno Tavares <connect+github@bltavares.com>"]
+name = "pickpocket"
+version = "0.1.0"
+
+[dependencies]
+hyper = "0.7.0"
