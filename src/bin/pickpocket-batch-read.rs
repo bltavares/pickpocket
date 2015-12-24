@@ -1,17 +1,19 @@
 extern crate hyper;
+extern crate rustc_serialize;
 
-use std::io::{Read, BufReader, BufRead};
-use std::env;
-
-use hyper::{Client, Url};
 use hyper::header::{Connection, ContentType};
+use hyper::{Client, Url};
+use rustc_serialize::json::Json;
+use std::collections::HashMap;
+use std::env;
+use std::io::{Read, BufReader, BufRead};
 
 const ENDPOINT: &'static str = "https://getpocket.com/v3";
 fn url(method: &str) -> Url {
     Url::parse(&format!("{}{}", ENDPOINT, method)).unwrap()
 }
 
-fn get(consumer_key: &str, auth_code: &str) {
+fn get(consumer_key: &str, auth_code: &str) -> Json {
     let client = Client::new();
 
     let method = url("/get");
@@ -22,7 +24,6 @@ fn get(consumer_key: &str, auth_code: &str) {
                            }}"##,
                           consumer_key,
                           auth_code);
-    println!("{}", payload);
     let mut res = client.post(method)
                         .body(&payload)
                         .header(ContentType::json())
@@ -32,8 +33,7 @@ fn get(consumer_key: &str, auth_code: &str) {
 
     let mut body = String::new();
     res.read_to_string(&mut body).unwrap();
-    println!("{:?}", res);
-    println!("{}", body);
+    Json::from_str(&body).unwrap()
 }
 
 fn main() {
@@ -55,9 +55,35 @@ fn main() {
 
     let file = std::fs::File::open(file_name).unwrap();
 
-    get(&consumer_key, &authorization_key);
+    let reading_list = get(&consumer_key, &authorization_key);
 
-    for url in BufReader::new(file).lines() {
-        println!("{}", url.unwrap());
+    let mut url_id: HashMap<String, String> = HashMap::new();
+
+    for (id, reading_item) in reading_list.as_object()
+                                          .unwrap()
+                                          .get("list")
+                                          .unwrap()
+                                          .as_object()
+                                          .unwrap()
+                                          .iter() {
+        let item = reading_item.as_object()
+                               .unwrap();
+        let url = match item.get("resolved_url") {
+            Some(x) => x,
+            None => item.get("given_url").unwrap(),
+        };
+
+        url_id.insert(String::from(url.as_string().unwrap()), id.clone());
+    }
+
+    println!("debug: References\n{:?}", &url_id);
+    let mut ids = Vec::new();
+
+    for line in BufReader::new(file).lines() {
+        let url = line.unwrap();
+        match url_id.get(&url) {
+            Some(id) => ids.push(id),
+            None => println!("Url {} did not match", &url),
+        }
     }
 }
