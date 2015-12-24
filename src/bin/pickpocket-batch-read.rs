@@ -30,12 +30,12 @@ fn mark_as_read(consumer_key: &str, auth_code: &str, ids: &Vec<&String>) {
                           auth_code,
                           actions.join(", "));
     println!("Payload: {}", payload);
-    let mut res = client.post(method)
-                        .body(&payload)
-                        .header(ContentType::json())
-                        .header(Connection::close())
-                        .send()
-                        .unwrap();
+    client.post(method)
+          .body(&payload)
+          .header(ContentType::json())
+          .header(Connection::close())
+          .send()
+          .unwrap();
 }
 
 fn get(consumer_key: &str, auth_code: &str) -> Json {
