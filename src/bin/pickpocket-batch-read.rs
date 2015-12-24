@@ -29,7 +29,6 @@ fn mark_as_read(consumer_key: &str, auth_code: &str, ids: &Vec<&String>) {
                           consumer_key,
                           auth_code,
                           actions.join(", "));
-    println!("Payload: {}", payload);
     client.post(method)
           .body(&payload)
           .header(ContentType::json())
@@ -101,7 +100,6 @@ fn main() {
         url_id.insert(String::from(url.as_string().unwrap()), id.clone());
     }
 
-    println!("debug: References\n{:?}", &url_id);
     let mut ids = Vec::new();
 
     for line in BufReader::new(file).lines() {
@@ -111,8 +109,6 @@ fn main() {
             None => println!("Url {} did not match", &url),
         }
     }
-
-    println!("debug: Ids\n{:?}", &ids);
 
     mark_as_read(&consumer_key, &authorization_key, &ids);
 }
