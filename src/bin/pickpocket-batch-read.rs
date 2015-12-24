@@ -13,6 +13,31 @@ fn url(method: &str) -> Url {
     Url::parse(&format!("{}{}", ENDPOINT, method)).unwrap()
 }
 
+fn mark_as_read(consumer_key: &str, auth_code: &str, ids: &Vec<&String>) {
+    let client = Client::new();
+
+    let method = url("/send");
+    let actions: Vec<String> = ids.iter()
+                                  .map(|id| {
+                                      format!(r##"{{ "action": "archive", "item_id": "{}" }}"##, id)
+                                  })
+                                  .collect();
+    let payload = format!(r##"{{ "consumer_key":"{}",
+                           "access_token":"{}",
+                           "actions": [{}]
+                           }}"##,
+                          consumer_key,
+                          auth_code,
+                          actions.join(", "));
+    println!("Payload: {}", payload);
+    let mut res = client.post(method)
+                        .body(&payload)
+                        .header(ContentType::json())
+                        .header(Connection::close())
+                        .send()
+                        .unwrap();
+}
+
 fn get(consumer_key: &str, auth_code: &str) -> Json {
     let client = Client::new();
 
@@ -86,4 +111,8 @@ fn main() {
             None => println!("Url {} did not match", &url),
         }
     }
+
+    println!("debug: Ids\n{:?}", &ids);
+
+    mark_as_read(&consumer_key, &authorization_key, &ids);
 }
