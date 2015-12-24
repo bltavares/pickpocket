@@ -1,6 +1,6 @@
 extern crate hyper;
 
-use std::io::Read;
+use std::io::{Read, BufReader, BufRead};
 use std::env;
 
 use hyper::{Client, Url};
@@ -39,15 +39,25 @@ fn get(consumer_key: &str, auth_code: &str) {
 fn main() {
     let consumer_env_key = "POCKET_CONSUMER_KEY";
     let consumer_key = env::var(consumer_env_key)
-                           .expect(&format!("Consumer key should be available on the environment \
-                                            variable {}",
-                                           consumer_env_key));
+                           .expect(&format!("Consumer key should be available on the \
+                                             environment variable {}",
+                                            consumer_env_key));
 
     let auth_env_key = "POCKET_AUTHORIZATION_CODE";
     let authorization_key = env::var(auth_env_key)
                                 .expect(&format!("Authorization key should be available on the \
-                                                 environment variable {}",
-                                                auth_env_key));
+                                                  environment variable {}",
+                                                 auth_env_key));
+    let file_name = env::args()
+                        .skip(1)
+                        .next()
+                        .expect("Expected an file as argument");
+
+    let file = std::fs::File::open(file_name).unwrap();
 
     get(&consumer_key, &authorization_key);
+
+    for url in BufReader::new(file).lines() {
+        println!("{}", url.unwrap());
+    }
 }
