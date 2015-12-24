@@ -44,7 +44,7 @@ fn get(consumer_key: &str, auth_code: &str) -> Json {
     let method = url("/get");
     let payload = format!(r##"{{ "consumer_key":"{}",
                            "access_token":"{}",
-                           "state":"unread",
+                           "state":"all",
                            "detailType":"simple"
                            }}"##,
                           consumer_key,
