@@ -1,8 +1,8 @@
 extern crate pickpocket;
 
+use std::env;
 use std::io::Write;
 use std::io;
-use std::env;
 
 use pickpocket::{BeginAuthentication, Auth};
 

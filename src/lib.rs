@@ -1,91 +1,83 @@
 extern crate hyper;
+extern crate rustc_serialize;
 
+use self::hyper::header::{Connection, ContentType};
+use self::hyper::{Client, Url};
+use self::rustc_serialize::json;
+use self::rustc_serialize::{Decodable, Decoder};
+use std::collections::HashMap;
 use std::io::Read;
 
-use hyper::{Client, Url};
-use hyper::header::{Connection, ContentType};
+mod auth;
+pub use auth::*;
 
-const ENDPOINT: &'static str = "https://getpocket.com/v3";
-pub const REDIRECT_URL: &'static str = "https://getpocket.com";
-
-pub struct Auth {
-    pub consumer_key: String,
-    pub authorization_code: String,
+pub struct Item {
+    pub url: String,
 }
 
-pub struct BeginAuthentication {
-    pub consumer_key: String,
+#[derive(RustcDecodable)]
+pub struct ReadingListResponse {
+    pub list: HashMap<String, Item>,
 }
 
-pub struct AuthorizationRequest {
-    consumer_key: String,
-    request_code: String,
+impl Decodable for Item {
+    fn decode<D: Decoder>(decoder: &mut D) -> Result<Item, D::Error> {
+        decoder.read_struct("root", 0, |decoder| {
+            let resolved_url: Option<String> = try!(decoder.read_struct_field("resolved_url",
+                                                                              0,
+                                                                              Decodable::decode));
+            let given_url: String = try!(decoder.read_struct_field("given_url",
+                                                                   0,
+                                                                   Decodable::decode));
+
+            Ok(Item { url: resolved_url.unwrap_or(given_url) })
+        })
+    }
 }
 
-pub fn url(method: &str) -> Url {
-    Url::parse(&format!("{}{}", ENDPOINT, method)).unwrap()
-}
+impl Auth {
+    pub fn mark_as_read(&self, ids: &Vec<&str>) {
+        let method = url("/send");
+        let actions: Vec<String> = ids.iter()
+                                      .map(|id| {
+                                          format!(r##"{{ "action": "archive", "item_id": "{}" }}"##,
+                                                  id)
+                                      })
+                                      .collect();
+        let payload = format!(r##"{{ "consumer_key":"{}",
+                               "access_token":"{}",
+                               "actions": [{}]
+                               }}"##,
+                              &self.consumer_key,
+                              &self.authorization_code,
+                              actions.join(", "));
 
-impl BeginAuthentication {
-    pub fn request_authorization_code(self) -> AuthorizationRequest {
-        let body = self.request();
-        let code = body.split("=").skip(1).next().unwrap();
-
-        AuthorizationRequest {
-            consumer_key: self.consumer_key,
-            request_code: code.to_string(),
-        }
+        self.request(method, payload);
     }
 
-    fn request(&self) -> String {
+    pub fn list_all(&self) -> ReadingListResponse {
+        let method = url("/get");
+        let payload = format!(r##"{{ "consumer_key":"{}",
+                               "access_token":"{}",
+                               "state":"all",
+                               "detailType":"simple"
+                               }}"##,
+                              &self.consumer_key,
+                              &self.authorization_code);
+
+        let response = self.request(method, payload);
+        json::decode(&response).expect("Couldn't parse /get response")
+    }
+
+    fn request(&self, method: Url, payload: String) -> String {
         let client = Client::new();
 
-        let method = url("/oauth/request");
         let mut res = client.post(method)
-                            .body(&format!("consumer_key={}&redirect_uri={}",
-                                           &self.consumer_key,
-                                           REDIRECT_URL))
-                            .header(ContentType::form_url_encoded())
+                            .body(&payload)
+                            .header(ContentType::json())
                             .header(Connection::close())
                             .send()
-                            .unwrap();
-
-        let mut body = String::new();
-        res.read_to_string(&mut body).unwrap();
-        body
-    }
-}
-
-impl AuthorizationRequest {
-    pub fn authorization_url(&self) -> String {
-        format!("https://getpocket.com/auth/authorize?request_token={}&redirect_uri={}",
-                &self.request_code,
-                REDIRECT_URL)
-    }
-
-    pub fn request_authorized_code(self) -> Auth {
-        let body = self.request();
-        let first_value = body.split("=").skip(1).next().unwrap();
-        let code = first_value.split("&").next().unwrap().to_string();
-
-        Auth {
-            consumer_key: self.consumer_key,
-            authorization_code: code,
-        }
-    }
-
-    fn request(&self) -> String {
-        let client = Client::new();
-
-        let method = url("/oauth/authorize");
-        let mut res = client.post(method)
-                            .body(&format!("consumer_key={}&code={}",
-                                           &self.consumer_key,
-                                           &self.request_code))
-                            .header(ContentType::form_url_encoded())
-                            .header(Connection::close())
-                            .send()
-                            .unwrap();
+                            .expect(&format!("Coulnd't make request with payload: {}", &payload));
 
         let mut body = String::new();
         res.read_to_string(&mut body).unwrap();
