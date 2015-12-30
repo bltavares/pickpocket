@@ -6,7 +6,7 @@ use self::hyper::Url;
 use std::io::Read;
 
 const ENDPOINT: &'static str = "https://getpocket.com/v3";
-pub const REDIRECT_URL: &'static str = "https://getpocket.com";
+const REDIRECT_URL: &'static str = "https://getpocket.com";
 
 pub fn url(method: &str) -> Url {
     Url::parse(&format!("{}{}", ENDPOINT, method)).unwrap()
