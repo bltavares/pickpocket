@@ -6,3 +6,4 @@ rust:
 matrix:
   allow_failures:
     - rust: nightly
+after_success: curl https://raw.githubusercontent.com/bltavares/travis-doc-upload/master/travis-doc-upload.sh | sh
