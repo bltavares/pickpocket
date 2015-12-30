@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::env;
 use std::io::{BufReader, BufRead};
 
-use pickpocket::Auth;
+use pickpocket::Client;
 
 fn main() {
     let consumer_env_key = "POCKET_CONSUMER_KEY";
@@ -27,7 +27,7 @@ fn main() {
 
     let file = std::fs::File::open(&file_name).expect(&format!("Couldn't open {}", &file_name));
 
-    let auth = Auth {
+    let auth = Client {
         consumer_key: consumer_key,
         authorization_code: authorization_code,
     };

@@ -2,7 +2,7 @@ extern crate hyper;
 extern crate rustc_serialize;
 
 use self::hyper::header::{Connection, ContentType};
-use self::hyper::{Client, Url};
+use self::hyper::Url;
 use self::rustc_serialize::json;
 use self::rustc_serialize::{Decodable, Decoder};
 use std::collections::HashMap;
@@ -35,7 +35,7 @@ impl Decodable for Item {
     }
 }
 
-impl Auth {
+impl Client {
     pub fn mark_as_read(&self, ids: &Vec<&str>) {
         let method = url("/send");
         let actions: Vec<String> = ids.iter()
@@ -70,7 +70,7 @@ impl Auth {
     }
 
     fn request(&self, method: Url, payload: String) -> String {
-        let client = Client::new();
+        let client = hyper::Client::new();
 
         let mut res = client.post(method)
                             .body(&payload)

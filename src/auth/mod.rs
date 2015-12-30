@@ -2,7 +2,7 @@ extern crate hyper;
 extern crate rustc_serialize;
 
 use self::hyper::header::{Connection, ContentType};
-use self::hyper::{Client, Url};
+use self::hyper::Url;
 use std::io::Read;
 
 const ENDPOINT: &'static str = "https://getpocket.com/v3";
@@ -12,7 +12,7 @@ pub fn url(method: &str) -> Url {
     Url::parse(&format!("{}{}", ENDPOINT, method)).unwrap()
 }
 
-pub struct Auth {
+pub struct Client {
     pub consumer_key: String,
     pub authorization_code: String,
 }
@@ -38,7 +38,7 @@ impl BeginAuthentication {
     }
 
     fn request(&self) -> String {
-        let client = Client::new();
+        let client = hyper::Client::new();
 
         let method = url("/oauth/request");
         let mut res = client.post(method)
@@ -63,19 +63,19 @@ impl AuthorizationRequest {
                 REDIRECT_URL)
     }
 
-    pub fn request_authorized_code(self) -> Auth {
+    pub fn request_authorized_code(self) -> Client {
         let body = self.request();
         let first_value = body.split("=").skip(1).next().unwrap();
         let code = first_value.split("&").next().unwrap().to_string();
 
-        Auth {
+        Client {
             consumer_key: self.consumer_key,
             authorization_code: code,
         }
     }
 
     fn request(&self) -> String {
-        let client = Client::new();
+        let client = hyper::Client::new();
 
         let method = url("/oauth/authorize");
         let mut res = client.post(method)

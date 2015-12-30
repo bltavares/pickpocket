@@ -4,7 +4,7 @@ use std::env;
 use std::io::Write;
 use std::io;
 
-use pickpocket::{BeginAuthentication, Auth};
+use pickpocket::{BeginAuthentication, Client};
 
 fn consumer_key() -> String {
     let key = "POCKET_CONSUMER_KEY";
@@ -35,7 +35,7 @@ fn main() {
     print_auth_as_env_variables(&auth);
 }
 
-fn print_auth_as_env_variables(auth: &Auth) {
+fn print_auth_as_env_variables(auth: &Client) {
     println!("export POCKET_AUTHORIZATION_CODE=\"{}\"",
              &auth.authorization_code);
     println!("export POCKET_CONSUMER_KEY=\"{}\"", &auth.consumer_key);
