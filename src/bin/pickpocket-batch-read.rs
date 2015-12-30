@@ -36,7 +36,7 @@ fn main() {
 
     let mut url_id: HashMap<&str, &str> = HashMap::new();
     for (id, reading_item) in reading_list.list.iter() {
-        url_id.insert(&reading_item.url, id);
+        url_id.insert(&reading_item.url(), id);
     }
 
     let mut ids: Vec<&str> = Vec::new();

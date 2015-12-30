@@ -4,15 +4,17 @@ extern crate rustc_serialize;
 use self::hyper::header::{Connection, ContentType};
 use self::hyper::Url;
 use self::rustc_serialize::json;
-use self::rustc_serialize::{Decodable, Decoder};
+use self::rustc_serialize::Decoder;
 use std::collections::HashMap;
 use std::io::Read;
 
 mod auth;
 pub use auth::*;
 
+#[derive(RustcDecodable)]
 pub struct Item {
-    pub url: String,
+    given_url: String,
+    resolved_url: Option<String>,
 }
 
 #[derive(RustcDecodable)]
@@ -20,18 +22,9 @@ pub struct ReadingListResponse {
     pub list: HashMap<String, Item>,
 }
 
-impl Decodable for Item {
-    fn decode<D: Decoder>(decoder: &mut D) -> Result<Item, D::Error> {
-        decoder.read_struct("root", 0, |decoder| {
-            let resolved_url: Option<String> = try!(decoder.read_struct_field("resolved_url",
-                                                                              0,
-                                                                              Decodable::decode));
-            let given_url: String = try!(decoder.read_struct_field("given_url",
-                                                                   0,
-                                                                   Decodable::decode));
-
-            Ok(Item { url: resolved_url.unwrap_or(given_url) })
-        })
+impl Item {
+    pub fn url(&self) -> &str {
+        &self.resolved_url.as_ref().unwrap_or(&self.given_url)
     }
 }
 
