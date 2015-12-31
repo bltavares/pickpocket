@@ -22,6 +22,11 @@ pub struct ReadingListResponse {
     pub list: HashMap<String, Item>,
 }
 
+enum Action {
+    Archive,
+    Favorite,
+}
+
 impl Item {
     pub fn url(&self) -> &str {
         &self.resolved_url.as_ref().unwrap_or(&self.given_url)
@@ -30,10 +35,23 @@ impl Item {
 
 impl Client {
     pub fn mark_as_read(&self, ids: &Vec<&str>) {
+        self.modify(Action::Archive, &ids);
+    }
+
+    pub fn mark_as_favorite(&self, ids: &Vec<&str>) {
+        self.modify(Action::Favorite, &ids);
+    }
+
+    fn modify(&self, action: Action, ids: &Vec<&str>) {
         let method = url("/send");
+        let action = match action {
+            Action::Favorite => "favorite",
+            Action::Archive => "archive",
+        };
         let actions: Vec<String> = ids.iter()
                                       .map(|id| {
-                                          format!(r##"{{ "action": "archive", "item_id": "{}" }}"##,
+                                          format!(r##"{{ "action": "{}", "item_id": "{}" }}"##,
+                                                  action,
                                                   id)
                                       })
                                       .collect();
