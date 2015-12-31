@@ -42,6 +42,20 @@ impl Client {
         self.modify(Action::Favorite, &ids);
     }
 
+    pub fn list_all(&self) -> ReadingListResponse {
+        let method = url("/get");
+        let payload = format!(r##"{{ "consumer_key":"{}",
+                               "access_token":"{}",
+                               "state":"all",
+                               "detailType":"simple"
+                               }}"##,
+                              &self.consumer_key,
+                              &self.authorization_code);
+
+        let response = self.request(method, payload);
+        json::decode(&response).expect("Couldn't parse /get response")
+    }
+
     fn modify(&self, action: Action, ids: &Vec<&str>) {
         let method = url("/send");
         let action = match action {
@@ -66,19 +80,6 @@ impl Client {
         self.request(method, payload);
     }
 
-    pub fn list_all(&self) -> ReadingListResponse {
-        let method = url("/get");
-        let payload = format!(r##"{{ "consumer_key":"{}",
-                               "access_token":"{}",
-                               "state":"all",
-                               "detailType":"simple"
-                               }}"##,
-                              &self.consumer_key,
-                              &self.authorization_code);
-
-        let response = self.request(method, payload);
-        json::decode(&response).expect("Couldn't parse /get response")
-    }
 
     fn request(&self, method: Url, payload: String) -> String {
         let client = hyper::Client::new();
