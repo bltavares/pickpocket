@@ -9,6 +9,7 @@ use std::collections::HashMap;
 use std::io::Read;
 
 mod auth;
+pub mod cli;
 pub use auth::*;
 
 #[derive(RustcDecodable)]

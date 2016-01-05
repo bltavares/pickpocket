@@ -6,20 +6,7 @@ use std::collections::HashMap;
 use std::env;
 use std::io::{BufReader, BufRead};
 
-use pickpocket::Client;
-
 fn main() {
-    let consumer_env_key = "POCKET_CONSUMER_KEY";
-    let consumer_key = env::var(consumer_env_key)
-                           .expect(&format!("Consumer key should be available on the \
-                                             environment variable {}",
-                                            consumer_env_key));
-
-    let auth_env_code = "POCKET_AUTHORIZATION_CODE";
-    let authorization_code = env::var(auth_env_code)
-                                 .expect(&format!("Authorization code should be available on \
-                                                   the environment variable {}",
-                                                  auth_env_code));
     let file_name = env::args()
                         .skip(1)
                         .next()
@@ -27,12 +14,12 @@ fn main() {
 
     let file = std::fs::File::open(&file_name).expect(&format!("Couldn't open {}", &file_name));
 
-    let auth = Client {
-        consumer_key: consumer_key,
-        authorization_code: authorization_code,
+    let client = match pickpocket::cli::client_from_env_vars() {
+        Ok(client) => client,
+        Err(e) => panic!("It wasn't possible to initialize a Pocket client\n{}", e),
     };
 
-    let reading_list = auth.list_all();
+    let reading_list = client.list_all();
 
     let mut url_id: HashMap<&str, &str> = HashMap::new();
     for (id, reading_item) in reading_list.list.iter() {
@@ -49,5 +36,5 @@ fn main() {
         }
     }
 
-    auth.mark_as_favorite(&ids);
+    client.mark_as_favorite(&ids);
 }
