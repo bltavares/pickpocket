@@ -22,7 +22,7 @@ fn main() {
     let reading_list = client.list_all();
 
     let mut url_id: HashMap<&str, &str> = HashMap::new();
-    for (id, reading_item) in reading_list.list.iter() {
+    for (id, reading_item) in &reading_list.list {
         url_id.insert(&reading_item.url(), id);
     }
 

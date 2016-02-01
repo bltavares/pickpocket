@@ -66,11 +66,11 @@ impl Item {
 }
 
 impl Client {
-    pub fn mark_as_read(&self, ids: &Vec<&str>) {
+    pub fn mark_as_read(&self, ids: &[&str]) {
         self.modify(Action::Archive, &ids);
     }
 
-    pub fn mark_as_favorite(&self, ids: &Vec<&str>) {
+    pub fn mark_as_favorite(&self, ids: &[&str]) {
         self.modify(Action::Favorite, &ids);
     }
 
@@ -88,7 +88,7 @@ impl Client {
         json::decode(&response).expect("Couldn't parse /get response")
     }
 
-    fn modify(&self, action: Action, ids: &Vec<&str>) {
+    fn modify(&self, action: Action, ids: &[&str]) {
         let method = url("/send");
         let action = match action {
             Action::Favorite => "favorite",

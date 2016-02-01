@@ -14,7 +14,7 @@ fn main() {
     let mut favorites : Vec<&str> = vec!();
     let mut read : Vec<&str> = vec!();
 
-    for (id, reading_item) in reading_list.list.iter() {
+    for (id, reading_item) in &reading_list.list {
         if reading_item.favorite() == FavoriteStatus::Favorited {
             favorites.push(id)
         }

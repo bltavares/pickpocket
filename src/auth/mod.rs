@@ -33,7 +33,7 @@ impl BeginAuthentication {
 
         AuthorizationRequest {
             consumer_key: self.consumer_key,
-            request_code: code.to_string(),
+            request_code: code.to_owned(),
         }
     }
 
@@ -66,7 +66,7 @@ impl AuthorizationRequest {
     pub fn request_authorized_code(self) -> Client {
         let body = self.request();
         let first_value = body.split("=").skip(1).next().unwrap();
-        let code = first_value.split("&").next().unwrap().to_string();
+        let code = first_value.split("&").next().unwrap().to_owned();
 
         Client {
             consumer_key: self.consumer_key,
