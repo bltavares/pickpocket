@@ -17,6 +17,8 @@ pub use auth::*;
 pub struct Item {
     given_url: String,
     resolved_url: Option<String>,
+    favorite: String,
+    status: String,
 }
 
 #[derive(RustcDecodable)]
@@ -29,9 +31,37 @@ enum Action {
     Favorite,
 }
 
+#[derive(PartialEq)]
+pub enum FavoriteStatus {
+    Favorited,
+    NotFavorited
+}
+
+#[derive(PartialEq)]
+pub enum Status {
+    Read,
+    Unread
+}
+
 impl Item {
     pub fn url(&self) -> &str {
         &self.resolved_url.as_ref().unwrap_or(&self.given_url)
+    }
+
+    pub fn favorite(&self) -> FavoriteStatus {
+        if &self.favorite == "1" {
+            FavoriteStatus::Favorited
+        } else {
+            FavoriteStatus::NotFavorited
+        }
+    }
+
+    pub fn status(&self) -> Status {
+        if &self.status == "1" {
+            Status::Read
+        } else {
+            Status::Unread
+        }
     }
 }
 
