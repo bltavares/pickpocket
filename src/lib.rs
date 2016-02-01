@@ -1,5 +1,6 @@
 extern crate hyper;
 extern crate rustc_serialize;
+extern crate chrono;
 
 use self::hyper::header::{Connection, ContentType};
 use self::hyper::Url;
@@ -63,11 +64,13 @@ impl Client {
             Action::Favorite => "favorite",
             Action::Archive => "archive",
         };
+        let time = chrono::UTC::now().timestamp();
         let actions: Vec<String> = ids.iter()
                                       .map(|id| {
-                                          format!(r##"{{ "action": "{}", "item_id": "{}" }}"##,
+                                          format!(r##"{{ "action": "{}", "item_id": "{}", "time": "{}" }}"##,
                                                   action,
-                                                  id)
+                                                  id,
+                                                  time)
                                       })
                                       .collect();
         let payload = format!(r##"{{ "consumer_key":"{}",
