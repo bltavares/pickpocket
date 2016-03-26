@@ -29,6 +29,7 @@ pub struct ReadingListResponse {
 enum Action {
     Archive,
     Favorite,
+    Add,
 }
 
 #[derive(PartialEq)]
@@ -74,6 +75,10 @@ impl Client {
         self.modify(Action::Favorite, &ids);
     }
 
+    pub fn add_urls(&self, urls: &[&str]) {
+        self.modify(Action::Add, &urls);
+    }
+
     pub fn list_all(&self) -> ReadingListResponse {
         let method = url("/get");
         let payload = format!(r##"{{ "consumer_key":"{}",
@@ -90,15 +95,21 @@ impl Client {
 
     fn modify(&self, action: Action, ids: &[&str]) {
         let method = url("/send");
-        let action = match action {
+        let action_verb = match action {
             Action::Favorite => "favorite",
             Action::Archive => "archive",
+            Action::Add => "add",
+        };
+        let item_key = match action {
+            Action::Add => "url",
+            _ => "item_id",
         };
         let time = chrono::UTC::now().timestamp();
         let actions: Vec<String> = ids.iter()
                                       .map(|id| {
-                                          format!(r##"{{ "action": "{}", "item_id": "{}", "time": "{}" }}"##,
-                                                  action,
+                                          format!(r##"{{ "action": "{}", "{}": "{}", "time": "{}" }}"##,
+                                                  action_verb,
+                                                  item_key,
                                                   id,
                                                   time)
                                       })
