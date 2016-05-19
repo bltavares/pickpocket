@@ -2,7 +2,7 @@ extern crate hyper;
 extern crate rustc_serialize;
 extern crate pickpocket;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeSet};
 use std::env;
 use std::io::{BufReader, BufRead};
 
@@ -26,12 +26,12 @@ fn main() {
         url_id.insert(&reading_item.url(), id);
     }
 
-    let mut urls: Vec<String> = Vec::new();
+    let mut urls: BTreeSet<String> = BTreeSet::new();
 
     for line in BufReader::new(file).lines() {
         let url = line.expect("Couldn't read line from Buffered Reader");
         match url_id.get(&url as &str) {
-            None => urls.push(url),
+            None => { urls.insert(url); },
             Some(_) => println!("Url {} already there. Not adding.", &url),
         }
     }
