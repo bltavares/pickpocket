@@ -8,9 +8,9 @@ use std::io::{BufReader, BufRead};
 
 fn main() {
     let file_name = env::args()
-                        .skip(1)
-                        .next()
-                        .expect("Expected an file as argument");
+        .skip(1)
+        .next()
+        .expect("Expected an file as argument");
 
     let file = std::fs::File::open(&file_name).expect(&format!("Couldn't open {}", &file_name));
 
@@ -31,7 +31,9 @@ fn main() {
     for line in BufReader::new(file).lines() {
         let url = line.expect("Couldn't read line from Buffered Reader");
         match url_id.get(&url as &str) {
-            Some(id) => { ids.insert(id); },
+            Some(id) => {
+                ids.insert(id);
+            }
             None => println!("Url {} did not match", &url),
         }
     }
