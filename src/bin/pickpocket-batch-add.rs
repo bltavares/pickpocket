@@ -36,5 +36,5 @@ fn main() {
         }
     }
 
-    client.add_urls(&urls.iter().map(AsRef::as_ref).collect::<Vec<&str>>());
+    client.add_urls(urls.iter().map(AsRef::as_ref));
 }

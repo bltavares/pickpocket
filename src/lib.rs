@@ -67,16 +67,22 @@ impl Item {
 }
 
 impl Client {
-    pub fn mark_as_read(&self, ids: &[&str]) {
-        self.modify(Action::Archive, &ids);
+    pub fn mark_as_read<'a, T>(&self, ids: T)
+        where T: IntoIterator<Item = &'a str>
+    {
+        self.modify(Action::Archive, ids);
     }
 
-    pub fn mark_as_favorite(&self, ids: &[&str]) {
-        self.modify(Action::Favorite, &ids);
+    pub fn mark_as_favorite<'a, T>(&self, ids: T)
+        where T: IntoIterator<Item = &'a str>
+    {
+        self.modify(Action::Favorite, ids);
     }
 
-    pub fn add_urls(&self, urls: &[&str]) {
-        self.modify(Action::Add, &urls);
+    pub fn add_urls<'a, T>(&self, urls: T)
+        where T: IntoIterator<Item = &'a str>
+    {
+        self.modify(Action::Add, urls);
     }
 
     pub fn list_all(&self) -> ReadingListResponse {
@@ -93,7 +99,9 @@ impl Client {
         json::decode(&response).expect("Couldn't parse /get response")
     }
 
-    fn modify(&self, action: Action, ids: &[&str]) {
+    fn modify<'a, T>(&self, action: Action, ids: T)
+        where T: IntoIterator<Item = &'a str>
+    {
         let method = url("/send");
         let action_verb = match action {
             Action::Favorite => "favorite",

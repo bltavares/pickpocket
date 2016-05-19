@@ -24,6 +24,6 @@ fn main() {
         }
     }
 
-    client.mark_as_favorite(&favorites);
-    client.mark_as_read(&read);
+    client.mark_as_favorite(favorites);
+    client.mark_as_read(read);
 }

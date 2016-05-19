@@ -36,5 +36,5 @@ fn main() {
         }
     }
 
-    client.mark_as_read(&ids);
+    client.mark_as_read(ids);
 }
