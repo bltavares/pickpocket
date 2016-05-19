@@ -2,7 +2,7 @@ extern crate hyper;
 extern crate rustc_serialize;
 extern crate pickpocket;
 
-use std::collections::{HashMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet};
 use std::env;
 use std::io::{BufReader, BufRead};
 
@@ -21,7 +21,7 @@ fn main() {
 
     let reading_list = client.list_all();
 
-    let mut url_id: HashMap<&str, &str> = HashMap::new();
+    let mut url_id: BTreeMap<&str, &str> = BTreeMap::new();
     for (id, reading_item) in &reading_list.list {
         url_id.insert(&reading_item.url(), id);
     }

@@ -6,7 +6,7 @@ use self::hyper::header::{Connection, ContentType};
 use self::hyper::Url;
 use self::rustc_serialize::json;
 use self::rustc_serialize::Decoder;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::io::Read;
 
 mod auth;
@@ -23,7 +23,7 @@ pub struct Item {
 
 #[derive(RustcDecodable)]
 pub struct ReadingListResponse {
-    pub list: HashMap<String, Item>,
+    pub list: BTreeMap<String, Item>,
 }
 
 enum Action {
