@@ -2,6 +2,7 @@ extern crate hyper;
 extern crate rustc_serialize;
 extern crate pickpocket;
 
+use std::collections::BTreeSet;
 use pickpocket::{Status, FavoriteStatus};
 
 fn main() {
@@ -11,19 +12,19 @@ fn main() {
     };
 
     let reading_list = client.list_all();
-    let mut favorites : Vec<&str> = vec!();
-    let mut read : Vec<&str> = vec!();
+    let mut favorites: BTreeSet<&str> = BTreeSet::new();
+    let mut read: BTreeSet<&str> = BTreeSet::new();
 
     for (id, reading_item) in &reading_list.list {
         if reading_item.favorite() == FavoriteStatus::Favorited {
-            favorites.push(id)
+            favorites.insert(id);
         }
 
         if reading_item.status() == Status::Read {
-            read.push(id)
+            read.insert(id);
         }
     }
 
-    client.mark_as_favorite(&favorites);
-    client.mark_as_read(&read);
+    client.mark_as_favorite(favorites);
+    client.mark_as_read(read);
 }

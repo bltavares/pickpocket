@@ -6,7 +6,7 @@ use self::hyper::header::{Connection, ContentType};
 use self::hyper::Url;
 use self::rustc_serialize::json;
 use self::rustc_serialize::Decoder;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::io::Read;
 
 mod auth;
@@ -23,7 +23,7 @@ pub struct Item {
 
 #[derive(RustcDecodable)]
 pub struct ReadingListResponse {
-    pub list: HashMap<String, Item>,
+    pub list: BTreeMap<String, Item>,
 }
 
 enum Action {
@@ -35,13 +35,13 @@ enum Action {
 #[derive(PartialEq)]
 pub enum FavoriteStatus {
     Favorited,
-    NotFavorited
+    NotFavorited,
 }
 
 #[derive(PartialEq)]
 pub enum Status {
     Read,
-    Unread
+    Unread,
 }
 
 impl Item {
@@ -67,16 +67,22 @@ impl Item {
 }
 
 impl Client {
-    pub fn mark_as_read(&self, ids: &[&str]) {
-        self.modify(Action::Archive, &ids);
+    pub fn mark_as_read<'a, T>(&self, ids: T)
+        where T: IntoIterator<Item = &'a str>
+    {
+        self.modify(Action::Archive, ids);
     }
 
-    pub fn mark_as_favorite(&self, ids: &[&str]) {
-        self.modify(Action::Favorite, &ids);
+    pub fn mark_as_favorite<'a, T>(&self, ids: T)
+        where T: IntoIterator<Item = &'a str>
+    {
+        self.modify(Action::Favorite, ids);
     }
 
-    pub fn add_urls(&self, urls: &[&str]) {
-        self.modify(Action::Add, &urls);
+    pub fn add_urls<'a, T>(&self, urls: T)
+        where T: IntoIterator<Item = &'a str>
+    {
+        self.modify(Action::Add, urls);
     }
 
     pub fn list_all(&self) -> ReadingListResponse {
@@ -93,7 +99,9 @@ impl Client {
         json::decode(&response).expect("Couldn't parse /get response")
     }
 
-    fn modify(&self, action: Action, ids: &[&str]) {
+    fn modify<'a, T>(&self, action: Action, ids: T)
+        where T: IntoIterator<Item = &'a str>
+    {
         let method = url("/send");
         let action_verb = match action {
             Action::Favorite => "favorite",
@@ -105,15 +113,15 @@ impl Client {
             _ => "item_id",
         };
         let time = chrono::UTC::now().timestamp();
-        let actions: Vec<String> = ids.iter()
-                                      .map(|id| {
-                                          format!(r##"{{ "action": "{}", "{}": "{}", "time": "{}" }}"##,
-                                                  action_verb,
-                                                  item_key,
-                                                  id,
-                                                  time)
-                                      })
-                                      .collect();
+        let actions: Vec<String> = ids.into_iter()
+            .map(|id| {
+                format!(r##"{{ "action": "{}", "{}": "{}", "time": "{}" }}"##,
+                        action_verb,
+                        item_key,
+                        id,
+                        time)
+            })
+            .collect();
         let payload = format!(r##"{{ "consumer_key":"{}",
                                "access_token":"{}",
                                "actions": [{}]
@@ -130,11 +138,11 @@ impl Client {
         let client = hyper::Client::new();
 
         let mut res = client.post(method)
-                            .body(&payload)
-                            .header(ContentType::json())
-                            .header(Connection::close())
-                            .send()
-                            .expect(&format!("Coulnd't make request with payload: {}", &payload));
+            .body(&payload)
+            .header(ContentType::json())
+            .header(Connection::close())
+            .send()
+            .expect(&format!("Coulnd't make request with payload: {}", &payload));
 
         let mut body = String::new();
         res.read_to_string(&mut body).unwrap();

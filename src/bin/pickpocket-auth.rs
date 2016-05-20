@@ -23,7 +23,7 @@ fn consumer_key() -> String {
 
 fn main() {
     let authorization_request = BeginAuthentication { consumer_key: consumer_key() }
-                                    .request_authorization_code();
+        .request_authorization_code();
 
     println!("Please visit {}", authorization_request.authorization_url());
     println!("Press enter after authorizing with Pocket");

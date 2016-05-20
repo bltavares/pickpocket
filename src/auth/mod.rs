@@ -42,13 +42,13 @@ impl BeginAuthentication {
 
         let method = url("/oauth/request");
         let mut res = client.post(method)
-                            .body(&format!("consumer_key={}&redirect_uri={}",
-                                           &self.consumer_key,
-                                           REDIRECT_URL))
-                            .header(ContentType::form_url_encoded())
-                            .header(Connection::close())
-                            .send()
-                            .unwrap();
+            .body(&format!("consumer_key={}&redirect_uri={}",
+                           &self.consumer_key,
+                           REDIRECT_URL))
+            .header(ContentType::form_url_encoded())
+            .header(Connection::close())
+            .send()
+            .unwrap();
 
         let mut body = String::new();
         res.read_to_string(&mut body).unwrap();
@@ -79,13 +79,13 @@ impl AuthorizationRequest {
 
         let method = url("/oauth/authorize");
         let mut res = client.post(method)
-                            .body(&format!("consumer_key={}&code={}",
-                                           &self.consumer_key,
-                                           &self.request_code))
-                            .header(ContentType::form_url_encoded())
-                            .header(Connection::close())
-                            .send()
-                            .unwrap();
+            .body(&format!("consumer_key={}&code={}",
+                           &self.consumer_key,
+                           &self.request_code))
+            .header(ContentType::form_url_encoded())
+            .header(Connection::close())
+            .send()
+            .unwrap();
 
         let mut body = String::new();
         res.read_to_string(&mut body).unwrap();
