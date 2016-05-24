@@ -20,15 +20,19 @@ lint-lib:
 	$(CLIPPY_COMMAND) --lib -- $(CLIPPY_ARGS)
 lint: | lint-lib $(BINARIES_LINT_TARGETS)
 
+outdated:
+	cargo outdated -R
+
 install:
 	@-cargo uninstall pickpocket
 	cargo install
 
 help:
 	@echo "Available options:"
-	@echo "  - test: Run cargo test"
 	@echo "  - check: Quickly validate all binaries compiles"
-	@echo "  - lint: Lint all binaries against clippy"
 	@echo "  - install: Installs the project using cargo"
+	@echo "  - lint: Lint all binaries against clippy"
+	@echo "  - outdated: List outdated dependency information"
+	@echo "  - test: Run cargo test"
 
-.PHONY: help test lint check $(BINARIES_CHECK_TARGETS) $(BINARIES_LINT_TARGETS)
+.PHONY: help test lint check outdated $(BINARIES_CHECK_TARGETS) $(BINARIES_LINT_TARGETS)
