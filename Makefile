@@ -1,5 +1,5 @@
 CLIPPY_COMMAND=rustup run nightly cargo clippy --release
-CLIPPY_ARGS=-Dclippy -Wclippy_pedantic
+CLIPPY_ARGS=-Dclippy
 
 BINARIES=$(patsubst %.rs,%,$(notdir $(wildcard src/bin/*.rs)))
 BINARIES_LINT_TARGETS=$(addprefix lint-,$(BINARIES))

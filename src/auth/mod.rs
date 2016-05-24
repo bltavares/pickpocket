@@ -9,7 +9,8 @@ const ENDPOINT: &'static str = "https://getpocket.com/v3";
 const REDIRECT_URL: &'static str = "https://getpocket.com";
 
 pub fn url(method: &str) -> Url {
-    Url::parse(&format!("{}{}", ENDPOINT, method)).unwrap()
+    let url = format!("{}{}", ENDPOINT, method);
+    Url::parse(&url).expect(&format!("Could not parse url: {}", url))
 }
 
 pub struct Client {
@@ -29,7 +30,7 @@ pub struct AuthorizationRequest {
 impl BeginAuthentication {
     pub fn request_authorization_code(self) -> AuthorizationRequest {
         let body = self.request();
-        let code = body.split("=").skip(1).next().unwrap();
+        let code = body.split('=').skip(1).next().expect("Could not retrieve the authorization code from the authentication request");
 
         AuthorizationRequest {
             consumer_key: self.consumer_key,
@@ -48,10 +49,10 @@ impl BeginAuthentication {
             .header(ContentType::form_url_encoded())
             .header(Connection::close())
             .send()
-            .unwrap();
+            .expect("Could not request OAuth authorization");
 
         let mut body = String::new();
-        res.read_to_string(&mut body).unwrap();
+        res.read_to_string(&mut body).expect("Could not read OAuth request body");
         body
     }
 }
@@ -65,8 +66,8 @@ impl AuthorizationRequest {
 
     pub fn request_authorized_code(self) -> Client {
         let body = self.request();
-        let first_value = body.split("=").skip(1).next().unwrap();
-        let code = first_value.split("&").next().unwrap().to_owned();
+        let first_value = body.split('=').skip(1).next().expect("Could not extract authorization line from response");
+        let code = first_value.split('&').next().expect("Could not extract authorization code from response").to_owned();
 
         Client {
             consumer_key: self.consumer_key,
@@ -85,10 +86,10 @@ impl AuthorizationRequest {
             .header(ContentType::form_url_encoded())
             .header(Connection::close())
             .send()
-            .unwrap();
+            .expect("Could not make authorization request");
 
         let mut body = String::new();
-        res.read_to_string(&mut body).unwrap();
+        res.read_to_string(&mut body).expect("Could not read authorization body response");
         body
     }
 }
