@@ -5,7 +5,6 @@ extern crate chrono;
 use self::hyper::header::{Connection, ContentType};
 use self::hyper::Url;
 use self::rustc_serialize::json;
-use self::rustc_serialize::Decoder;
 use std::collections::BTreeMap;
 use std::io::Read;
 
@@ -46,7 +45,7 @@ pub enum Status {
 
 impl Item {
     pub fn url(&self) -> &str {
-        &self.resolved_url.as_ref().unwrap_or(&self.given_url)
+        self.resolved_url.as_ref().unwrap_or(&self.given_url)
     }
 
     pub fn favorite(&self) -> FavoriteStatus {
@@ -145,7 +144,7 @@ impl Client {
             .expect(&format!("Coulnd't make request with payload: {}", &payload));
 
         let mut body = String::new();
-        res.read_to_string(&mut body).unwrap();
+        res.read_to_string(&mut body).expect("Could not read the HTTP request's body");
         body
     }
 }

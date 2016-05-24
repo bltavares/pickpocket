@@ -12,10 +12,10 @@ fn consumer_key() -> String {
         Ok(val) => val,
         Err(_) => {
             print!("Please, type in your consumer key: ");
-            io::stdout().flush().unwrap();
+            io::stdout().flush().expect("Could not write message to terminal");
 
             let mut input = String::new();
-            io::stdin().read_line(&mut input).unwrap();
+            io::stdin().read_line(&mut input).expect("Could not read consumer key from terminal");
             input
         }
     }
@@ -29,7 +29,7 @@ fn main() {
     println!("Press enter after authorizing with Pocket");
 
     let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
+    io::stdin().read_line(&mut input).expect("Could not read authorizing code from terminal");
 
     let auth = authorization_request.request_authorized_code();
     print_auth_as_env_variables(&auth);
