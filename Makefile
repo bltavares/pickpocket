@@ -4,6 +4,8 @@ CLIPPY_ARGS := -Dclippy
 
 BINARIES := $(patsubst %.rs,%,$(notdir $(wildcard src/bin/*.rs)))
 
+default: test
+
 test:
 	cargo test
 
