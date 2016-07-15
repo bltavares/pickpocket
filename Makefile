@@ -7,13 +7,13 @@ BINARIES := $(patsubst %.rs,%,$(notdir $(wildcard src/bin/*.rs)))
 default: test
 
 test:
-	cargo test
+	$(CARGO) test
 
 BINARIES_CHECK_TARGETS := $(addprefix check-,$(BINARIES))
 $(BINARIES_CHECK_TARGETS):
-	cargo check --bin $(patsubst check-%,%,$@)
+	$(CARGO) check --bin $(patsubst check-%,%,$@)
 check-lib:
-	cargo check --lib
+	$(CARGO) check --lib
 check: | check-lib $(BINARIES_CHECK_TARGETS)
 
 BINARIES_LINT_TARGETS := $(addprefix lint-,$(BINARIES))
@@ -24,11 +24,11 @@ lint-lib:
 lint: | lint-lib $(BINARIES_LINT_TARGETS)
 
 outdated:
-	cargo outdated -R
+	$(CARGO) outdated -R
 
 install:
-	@-cargo uninstall pickpocket
-	cargo install
+	@-$(CARGO) uninstall pickpocket
+	$(CARGO) install
 
 help:
 	@echo "Available options:"
