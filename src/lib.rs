@@ -151,7 +151,10 @@ impl Client {
 
 pub fn cleanup_url(url: &str) -> String {
     let parsed = Url::parse(url).expect("Could not parse cleanup url");
-    format!("{}://{}{}", parsed.scheme(), parsed.host_str().expect("Cleaned up an url without a host") , parsed.path())
+    format!("{}://{}{}",
+            parsed.scheme(),
+            parsed.host_str().expect("Cleaned up an url without a host"),
+            parsed.path())
 }
 
 #[cfg(test)]
@@ -182,4 +185,3 @@ mod test {
         assert_eq!(cleanup_url(url), "https://another.example.com/");
     }
 }
-

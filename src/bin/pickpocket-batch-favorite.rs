@@ -41,7 +41,7 @@ fn main() {
                     Some(id) => {
                         ids.insert(id);
                     }
-                    None => println!("Url {} did not match", &url)
+                    None => println!("Url {} did not match", &url),
                 }
             }
         }
