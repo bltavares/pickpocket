@@ -30,7 +30,10 @@ pub struct AuthorizationRequest {
 impl BeginAuthentication {
     pub fn request_authorization_code(self) -> AuthorizationRequest {
         let body = self.request();
-        let code = body.split('=').skip(1).next().expect("Could not retrieve the authorization code from the authentication request");
+        let code = body.split('=')
+            .skip(1)
+            .next()
+            .expect("Could not retrieve the authorization code from the authentication request");
 
         AuthorizationRequest {
             consumer_key: self.consumer_key,
@@ -66,8 +69,14 @@ impl AuthorizationRequest {
 
     pub fn request_authorized_code(self) -> Client {
         let body = self.request();
-        let first_value = body.split('=').skip(1).next().expect("Could not extract authorization line from response");
-        let code = first_value.split('&').next().expect("Could not extract authorization code from response").to_owned();
+        let first_value = body.split('=')
+            .skip(1)
+            .next()
+            .expect("Could not extract authorization line from response");
+        let code = first_value.split('&')
+            .next()
+            .expect("Could not extract authorization code from response")
+            .to_owned();
 
         Client {
             consumer_key: self.consumer_key,
