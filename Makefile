@@ -54,10 +54,4 @@ fmt:
 .PHONY: help # Shows the acailable tasks
 help:
 	@echo "Available options:"
-	@echo "  - check: Quickly validate all binaries compiles"
-	@echo "  - install: Installs the project using cargo"
-	@echo "  - lint: Lint all binaries against clippy"
-	@echo "  - outdated: List outdated dependency information"
-	@echo "  - test: Run cargo test"
-
-.PHONY: help test lint check outdated $(BINARIES_CHECK_TARGETS) $(BINARIES_LINT_TARGETS) install clean
+	@grep '^.PHONY: [^#]\+ #' Makefile | cut -d: -f2- | sed 's/#/-/' | sort
