@@ -30,6 +30,12 @@ install:
 	@-$(CARGO) uninstall pickpocket
 	$(CARGO) install
 
+clean:
+	$(CARGO) clean
+
+fmt:
+	$(CARGO) fmt -- --write-mode overwrite
+
 help:
 	@echo "Available options:"
 	@echo "  - check: Quickly validate all binaries compiles"
@@ -38,4 +44,4 @@ help:
 	@echo "  - outdated: List outdated dependency information"
 	@echo "  - test: Run cargo test"
 
-.PHONY: help test lint check outdated $(BINARIES_CHECK_TARGETS) $(BINARIES_LINT_TARGETS)
+.PHONY: help test lint check outdated $(BINARIES_CHECK_TARGETS) $(BINARIES_LINT_TARGETS) install clean
