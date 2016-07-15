@@ -148,3 +148,38 @@ impl Client {
         body
     }
 }
+
+pub fn cleanup_url(url: &str) -> String {
+    let parsed = Url::parse(url).expect("Could not parse cleanup url");
+    format!("{}://{}{}", parsed.scheme(), parsed.host_str().expect("Cleaned up an url without a host") , parsed.path())
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_clean_url_hash() {
+        let url_ = "http://example.com#asdfas.fsa";
+        assert_eq!(cleanup_url(url_), "http://example.com/");
+    }
+
+    #[test]
+    fn test_clean_url_query() {
+        let url_ = "http://example.com?";
+        assert_eq!(cleanup_url(url_), "http://example.com/");
+    }
+
+    #[test]
+    fn test_clean_url_keep_same_url() {
+        let url_ = "http://another.example.com";
+        assert_eq!(cleanup_url(url_), "http://another.example.com/");
+    }
+
+    #[test]
+    fn test_clean_url_keep_https() {
+        let url = "https://another.example.com";
+        assert_eq!(cleanup_url(url), "https://another.example.com/");
+    }
+}
+

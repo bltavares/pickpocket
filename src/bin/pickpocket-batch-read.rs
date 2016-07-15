@@ -22,8 +22,11 @@ fn main() {
     let reading_list = client.list_all();
 
     let mut url_id: BTreeMap<&str, &str> = BTreeMap::new();
+    let mut cleanurl_id: BTreeMap<String, &str> = BTreeMap::new();
+
     for (id, reading_item) in &reading_list.list {
         url_id.insert(reading_item.url(), id);
+        cleanurl_id.insert(pickpocket::cleanup_url(reading_item.url()), id);
     }
 
     let mut ids: BTreeSet<&str> = BTreeSet::new();
@@ -34,7 +37,14 @@ fn main() {
             Some(id) => {
                 ids.insert(id);
             }
-            None => println!("Url {} did not match", &url),
+            None => {
+                match cleanurl_id.get(&pickpocket::cleanup_url(&url)) {
+                    Some(id) => {
+                        ids.insert(id);
+                    }
+                    None => println!("Url {} did not match", &url)
+                }
+            }
         }
     }
 
