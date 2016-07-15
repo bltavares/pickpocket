@@ -12,7 +12,7 @@ mod auth;
 pub mod cli;
 pub use auth::*;
 
-#[derive(RustcDecodable)]
+#[derive(RustcDecodable, Debug)]
 pub struct Item {
     given_url: String,
     resolved_url: Option<String>,
