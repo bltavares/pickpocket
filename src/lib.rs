@@ -149,8 +149,8 @@ impl Client {
     }
 }
 
-fn fixup_blogspot(url : &str) -> String {
-    let split : Vec<_> = url.split(".blogspot.").collect();
+fn fixup_blogspot(url: &str) -> String {
+    let split: Vec<_> = url.split(".blogspot.").collect();
     if split.len() == 2 {
         format!("{}.blogspot.com", split[0])
     } else {
@@ -199,12 +199,14 @@ mod test {
     #[test]
     fn test_cleanup_blogspot_first_tld() {
         let url = "https://this-is-a.blogspot.cl/asdf/asdf/asdf?asdf=1";
-        assert_eq!(cleanup_url(url), "https://this-is-a.blogspot.com/asdf/asdf/asdf");
+        assert_eq!(cleanup_url(url),
+                   "https://this-is-a.blogspot.com/asdf/asdf/asdf");
     }
 
     #[test]
     fn test_cleanup_blogspot_second_tld() {
         let url = "https://this-is-a.blogspot.com.br/asdf/asdf/asdf?asdf=1";
-        assert_eq!(cleanup_url(url), "https://this-is-a.blogspot.com/asdf/asdf/asdf");
+        assert_eq!(cleanup_url(url),
+                   "https://this-is-a.blogspot.com/asdf/asdf/asdf");
     }
 }
