@@ -169,7 +169,7 @@ fn start_domain_from(url: &str) -> usize {
 pub fn cleanup_url(url: &str) -> String {
     let parsed = Url::parse(url).expect("Could not parse cleanup url");
     let current_host = parsed.host_str().expect("Cleaned up an url without a host");
-    let starts_from = start_domain_from(&current_host);
+    let starts_from = start_domain_from(current_host);
 
     format!("{}://{}{}",
             parsed.scheme(),
