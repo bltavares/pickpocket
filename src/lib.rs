@@ -149,11 +149,22 @@ impl Client {
     }
 }
 
+fn fixup_blogspot(url : &str) -> String {
+    let mut reverse_host : Vec<&str> = url.split('.').rev().collect();
+    if reverse_host[1] == "blogspot" {
+        reverse_host[0] = "com";
+    }
+    reverse_host.reverse();
+    reverse_host.join(".")
+}
+
 pub fn cleanup_url(url: &str) -> String {
     let parsed = Url::parse(url).expect("Could not parse cleanup url");
+    let current_host = parsed.host_str().expect("Cleaned up an url without a host");
+
     format!("{}://{}{}",
             parsed.scheme(),
-            parsed.host_str().expect("Cleaned up an url without a host"),
+            fixup_blogspot(current_host),
             parsed.path())
 }
 
@@ -183,5 +194,11 @@ mod test {
     fn test_clean_url_keep_https() {
         let url = "https://another.example.com";
         assert_eq!(cleanup_url(url), "https://another.example.com/");
+    }
+
+    #[test]
+    fn test_cleanup_blogspot() {
+        let url = "https://this-is-a.blogspot.cl/asdf/asdf/asdf?asdf=1";
+        assert_eq!(cleanup_url(url), "https://this-is-a.blogspot.com/asdf/asdf/asdf");
     }
 }
