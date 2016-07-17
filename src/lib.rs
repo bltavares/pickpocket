@@ -150,21 +150,11 @@ impl Client {
 }
 
 fn fixup_blogspot(url : &str) -> String {
-    let reverse_host : Vec<_> = url.split('.').rev().collect();
-    let mut host = Vec::new();
-    for (index, item) in reverse_host.iter().enumerate() {
-        if *item == "blogspot" {
-            host.push("com");
-            host.extend_from_slice(&reverse_host[index..]);
-            host.reverse();
-            break;
-        }
-    }
-
-    if host.is_empty() {
-        url.into()
+    let split : Vec<_> = url.split(".blogspot.").collect();
+    if split.len() == 2 {
+        format!("{}.blogspot.com", split[0])
     } else {
-        host.join(".")
+        url.into()
     }
 }
 
