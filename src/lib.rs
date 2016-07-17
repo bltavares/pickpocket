@@ -158,13 +158,22 @@ fn fixup_blogspot(url: &str) -> String {
     }
 }
 
+fn start_domain_from(url: &str) -> usize {
+    if url.starts_with("www.") {
+        4
+    } else {
+        0
+    }
+}
+
 pub fn cleanup_url(url: &str) -> String {
     let parsed = Url::parse(url).expect("Could not parse cleanup url");
     let current_host = parsed.host_str().expect("Cleaned up an url without a host");
+    let starts_from = start_domain_from(current_host);
 
     format!("{}://{}{}",
             parsed.scheme(),
-            fixup_blogspot(current_host),
+            fixup_blogspot(&current_host[starts_from..]),
             parsed.path())
 }
 
@@ -206,6 +215,13 @@ mod test {
     #[test]
     fn test_cleanup_blogspot_second_tld() {
         let url = "https://this-is-a.blogspot.com.br/asdf/asdf/asdf?asdf=1";
+        assert_eq!(cleanup_url(url),
+                   "https://this-is-a.blogspot.com/asdf/asdf/asdf");
+    }
+
+    #[test]
+    fn test_cleanup_www() {
+        let url = "https://www.this-is-a.blogspot.com.br/asdf/asdf/asdf?asdf=1";
         assert_eq!(cleanup_url(url),
                    "https://this-is-a.blogspot.com/asdf/asdf/asdf");
     }
