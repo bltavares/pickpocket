@@ -150,12 +150,22 @@ impl Client {
 }
 
 fn fixup_blogspot(url : &str) -> String {
-    let mut reverse_host : Vec<&str> = url.split('.').rev().collect();
-    if reverse_host[1] == "blogspot" {
-        reverse_host[0] = "com";
+    let reverse_host : Vec<_> = url.split('.').rev().collect();
+    let mut host = Vec::new();
+    for (index, item) in reverse_host.iter().enumerate() {
+        if *item == "blogspot" {
+            host.push("com");
+            host.extend_from_slice(&reverse_host[index..]);
+            host.reverse();
+            break;
+        }
     }
-    reverse_host.reverse();
-    reverse_host.join(".")
+
+    if host.is_empty() {
+        url.into()
+    } else {
+        host.join(".")
+    }
 }
 
 pub fn cleanup_url(url: &str) -> String {
@@ -197,8 +207,14 @@ mod test {
     }
 
     #[test]
-    fn test_cleanup_blogspot() {
+    fn test_cleanup_blogspot_first_tld() {
         let url = "https://this-is-a.blogspot.cl/asdf/asdf/asdf?asdf=1";
+        assert_eq!(cleanup_url(url), "https://this-is-a.blogspot.com/asdf/asdf/asdf");
+    }
+
+    #[test]
+    fn test_cleanup_blogspot_second_tld() {
+        let url = "https://this-is-a.blogspot.com.br/asdf/asdf/asdf?asdf=1";
         assert_eq!(cleanup_url(url), "https://this-is-a.blogspot.com/asdf/asdf/asdf");
     }
 }
