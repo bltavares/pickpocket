@@ -1,5 +1,3 @@
-extern crate hyper;
-extern crate rustc_serialize;
 extern crate pickpocket;
 
 use std::collections::BTreeSet;
