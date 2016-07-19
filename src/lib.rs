@@ -1,10 +1,12 @@
+extern crate bincode;
+extern crate chrono;
+extern crate flate2;
 extern crate hyper;
 extern crate rustc_serialize;
-extern crate chrono;
 
-use self::hyper::header::{Connection, ContentType};
-use self::hyper::Url;
-use self::rustc_serialize::json;
+use hyper::header::{Connection, ContentType};
+use hyper::Url;
+use rustc_serialize::json;
 use std::collections::BTreeMap;
 use std::io::Read;
 
