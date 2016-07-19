@@ -12,6 +12,7 @@ use rustc_serialize::json::DecoderError;
 
 mod auth;
 pub mod cli;
+pub mod batch;
 pub use auth::*;
 
 const DEFAULT_COUNT: u32 = 5000;
