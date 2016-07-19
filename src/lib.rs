@@ -182,7 +182,7 @@ impl Client {
 }
 
 fn parse_all_response(response: &str) -> ResponseState {
-    match json::decode::<ReadingListResponse>(&response) {
+    match json::decode::<ReadingListResponse>(response) {
         Ok(r) => ResponseState::Parsed(r),
         Err(DecoderError::ExpectedError(ref x, ref y)) if x == "Object" && y == "[]" => {
             ResponseState::NoMore
