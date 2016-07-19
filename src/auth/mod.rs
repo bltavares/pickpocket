@@ -1,8 +1,6 @@
-extern crate hyper;
-extern crate rustc_serialize;
-
-use self::hyper::header::{Connection, ContentType};
-use self::hyper::Url;
+use hyper;
+use hyper::header::{Connection, ContentType};
+use hyper::Url;
 use std::io::Read;
 
 const ENDPOINT: &'static str = "https://getpocket.com/v3";

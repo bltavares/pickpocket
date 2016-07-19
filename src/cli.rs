@@ -1,16 +1,12 @@
-extern crate bincode;
-extern crate flate2;
-extern crate hyper;
-extern crate rustc_serialize;
-
 use std::io::{BufWriter, BufReader};
 
-use self::bincode::rustc_serialize::decode_from;
-use self::bincode::rustc_serialize::encode_into;
+use bincode::SizeLimit;
+use bincode::rustc_serialize::decode_from;
+use bincode::rustc_serialize::encode_into;
 
-use self::flate2::Compression;
-use self::flate2::read::ZlibDecoder;
-use self::flate2::write::ZlibEncoder;
+use flate2::Compression;
+use flate2::read::ZlibDecoder;
+use flate2::write::ZlibEncoder;
 
 pub use auth::*;
 use ReadingList;
@@ -53,7 +49,7 @@ impl FileClient {
         let reader = BufReader::new(file);
         let mut decoder = ZlibDecoder::new(reader);
 
-        let parsed = try!(decode_from(&mut decoder, bincode::SizeLimit::Infinite)
+        let parsed = try!(decode_from(&mut decoder, SizeLimit::Infinite)
             .map_err(|_| format!("Could not read content from file: {}", &file_name)));
 
         Ok(FileClient { list: parsed })
@@ -69,7 +65,7 @@ impl FileClient {
 
         let writer = BufWriter::new(file);
         let mut encoder = ZlibEncoder::new(writer, Compression::Best);
-        encode_into(&self.list, &mut encoder, bincode::SizeLimit::Infinite)
+        encode_into(&self.list, &mut encoder, SizeLimit::Infinite)
             .map_err(|_| "Failed to encode the content".into())
     }
 }
