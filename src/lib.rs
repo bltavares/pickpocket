@@ -23,6 +23,8 @@ const DEFAULT_COUNT: u32 = 5000;
 pub struct Item {
     given_url: String,
     resolved_url: Option<String>,
+    given_title: String,
+    resolved_title: Option<String>,
     favorite: String,
     status: String,
 }
@@ -61,6 +63,15 @@ pub enum Status {
 impl Item {
     pub fn url(&self) -> &str {
         self.resolved_url.as_ref().unwrap_or(&self.given_url)
+    }
+
+    pub fn title(&self) -> &str {
+        let title = self.resolved_title.as_ref().unwrap_or(&self.given_title);
+        if title.is_empty() {
+            self.url()
+        } else {
+            title
+        }
     }
 
     pub fn favorite(&self) -> FavoriteStatus {
