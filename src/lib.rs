@@ -8,9 +8,13 @@ use self::rustc_serialize::json;
 use std::collections::BTreeMap;
 use std::io::Read;
 
+use rustc_serialize::json::DecoderError;
+
 mod auth;
 pub mod cli;
 pub use auth::*;
+
+const DEFAULT_COUNT: u32 = 5000;
 
 #[derive(RustcEncodable, RustcDecodable, Debug)]
 pub struct Item {
@@ -23,8 +27,14 @@ pub struct Item {
 pub type ReadingList = BTreeMap<String, Item>;
 
 #[derive(RustcDecodable)]
-pub struct ReadingListResponse {
+struct ReadingListResponse {
     list: ReadingList,
+}
+
+enum ResponseState {
+    Parsed(ReadingListResponse),
+    NoMore,
+    Error(DecoderError),
 }
 
 enum Action {
@@ -87,18 +97,37 @@ impl Client {
     }
 
     pub fn list_all(&self) -> ReadingList {
-        let method = url("/get");
-        let payload = format!(r##"{{ "consumer_key":"{}",
-                               "access_token":"{}",
-                               "state":"all",
-                               "detailType":"simple"
-                               }}"##,
-                              &self.consumer_key,
-                              &self.authorization_code);
+        let mut reading_list: ReadingList = Default::default();
 
-        let response = self.request(method, payload);
-        let parsed_response : ReadingListResponse = json::decode(&response).expect("Couldn't parse /get response");
-        parsed_response.list
+        let mut offset = 0;
+
+        loop {
+            let method = url("/get");
+            let payload = format!(r##"{{ "consumer_key":"{}",
+                               "access_token":"{}",
+                               "sort":"site",
+                               "state":"all",
+                               "detailType":"simple",
+                               "count":"{}",
+                               "offset":"{}"
+                               }}"##,
+                                  &self.consumer_key,
+                                  &self.authorization_code,
+                                  DEFAULT_COUNT,
+                                  (offset * DEFAULT_COUNT));
+
+            let response = self.request(method, payload);
+            match parse_all_response(&response) {
+                ResponseState::NoMore => break,
+                ResponseState::Parsed(parsed_response) => {
+                    offset += 1;
+                    reading_list.extend(parsed_response.list.into_iter())
+                }
+                ResponseState::Error(e) => panic!("Failed to parse the payload: {:?}", e),
+            }
+        }
+
+        reading_list
     }
 
     fn modify<'a, T>(&self, action: Action, ids: T)
@@ -149,6 +178,16 @@ impl Client {
         let mut body = String::new();
         res.read_to_string(&mut body).expect("Could not read the HTTP request's body");
         body
+    }
+}
+
+fn parse_all_response(response: &str) -> ResponseState {
+    match json::decode::<ReadingListResponse>(&response) {
+        Ok(r) => ResponseState::Parsed(r),
+        Err(DecoderError::ExpectedError(ref x, ref y)) if x == "Object" && y == "[]" => {
+            ResponseState::NoMore
+        }
+        Err(e) => ResponseState::Error(e),
     }
 }
 
@@ -211,5 +250,32 @@ mod test {
         let url = "https://this-is-a.blogspot.com.br/asdf/asdf/asdf?asdf=1";
         assert_eq!(cleanup_url(url),
                    "https://this-is-a.blogspot.com/asdf/asdf/asdf");
+    }
+}
+
+#[test]
+fn test_decoding_empty_object_list() {
+    let response = r#"{ "list": {}}"#;
+    match parse_all_response(&response) {
+        ResponseState::Parsed(_) => assert!(true, "All cool"),
+        _ => assert!(false, "This should have been parsed"),
+    }
+}
+
+#[test]
+fn test_decoding_empty_pocket_list() {
+    let response = r#"{ "list": []}"#;
+    match parse_all_response(&response) {
+        ResponseState::NoMore => assert!(true, "All cool"),
+        _ => assert!(false, "This should signal an empty list"),
+    }
+}
+
+#[test]
+fn test_decoding_error() {
+    let response = r#"{ "list": "#;
+    match parse_all_response(&response) {
+        ResponseState::Error(_) => assert!(true, "All cool"),
+        _ => assert!(false, "This should fail to parse"),
     }
 }
