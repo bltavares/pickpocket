@@ -4,6 +4,8 @@ name = "pickpocket"
 version = "0.1.0"
 
 [dependencies]
+bincode = "0.5.9"
 chrono = "0.2.18"
+flate2 = "0.2.14"
 hyper = "0.9.6"
 rustc-serialize = "0.3.16"

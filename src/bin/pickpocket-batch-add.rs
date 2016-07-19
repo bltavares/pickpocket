@@ -1,16 +1,21 @@
-extern crate hyper;
-extern crate rustc_serialize;
 extern crate pickpocket;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::env;
 use std::io::{BufReader, BufRead};
 
+use pickpocket::cli::*;
+
 fn main() {
     let file_name = env::args()
         .skip(1)
         .next()
         .expect("Expected an file as argument");
+
+    let cache_file_name = env::args()
+        .skip(2)
+        .next()
+        .expect("Expected an cache as argument");
 
     let file = std::fs::File::open(&file_name).expect(&format!("Couldn't open {}", &file_name));
 
@@ -19,10 +24,15 @@ fn main() {
         Err(e) => panic!("It wasn't possible to initialize a Pocket client\n{}", e),
     };
 
-    let reading_list = client.list_all();
+    let cache_client = match FileClient::from_cache(&cache_file_name) {
+        Ok(client) => client,
+        Err(e) => panic!("It wasn't possible to initialize a Pocket cache\n{}", e),
+    };
+
+    let reading_list = cache_client.list_all();
 
     let mut url_id: BTreeMap<&str, &str> = BTreeMap::new();
-    for (id, reading_item) in &reading_list.list {
+    for (id, reading_item) in reading_list {
         url_id.insert(reading_item.url(), id);
     }
 
