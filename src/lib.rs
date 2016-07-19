@@ -12,7 +12,7 @@ mod auth;
 pub mod cli;
 pub use auth::*;
 
-#[derive(RustcDecodable, Debug)]
+#[derive(RustcEncodable, RustcDecodable, Debug)]
 pub struct Item {
     given_url: String,
     resolved_url: Option<String>,
@@ -20,7 +20,7 @@ pub struct Item {
     status: String,
 }
 
-#[derive(RustcDecodable)]
+#[derive(RustcEncodable, RustcDecodable)]
 pub struct ReadingListResponse {
     pub list: BTreeMap<String, Item>,
 }
