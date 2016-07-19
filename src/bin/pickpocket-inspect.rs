@@ -15,7 +15,7 @@ fn main() {
 
     let reading_list = client.list_all();
 
-    for (_, reading_item) in reading_list {
+    for reading_item in reading_list.values() {
         println!("{title} | {url}",
                  url = pickpocket::cleanup_url(reading_item.url()),
                  title = reading_item.title());
