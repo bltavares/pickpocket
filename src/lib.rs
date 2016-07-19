@@ -20,9 +20,11 @@ pub struct Item {
     status: String,
 }
 
-#[derive(RustcEncodable, RustcDecodable)]
+pub type ReadingList = BTreeMap<String, Item>;
+
+#[derive(RustcDecodable)]
 pub struct ReadingListResponse {
-    pub list: BTreeMap<String, Item>,
+    list: ReadingList,
 }
 
 enum Action {
@@ -84,7 +86,7 @@ impl Client {
         self.modify(Action::Add, urls);
     }
 
-    pub fn list_all(&self) -> ReadingListResponse {
+    pub fn list_all(&self) -> ReadingList {
         let method = url("/get");
         let payload = format!(r##"{{ "consumer_key":"{}",
                                "access_token":"{}",
@@ -95,7 +97,8 @@ impl Client {
                               &self.authorization_code);
 
         let response = self.request(method, payload);
-        json::decode(&response).expect("Couldn't parse /get response")
+        let parsed_response : ReadingListResponse = json::decode(&response).expect("Couldn't parse /get response");
+        parsed_response.list
     }
 
     fn modify<'a, T>(&self, action: Action, ids: T)

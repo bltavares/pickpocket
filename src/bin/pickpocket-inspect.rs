@@ -12,7 +12,7 @@ use bincode::rustc_serialize::decode_from;
 
 use flate2::read::ZlibDecoder;
 
-use pickpocket::ReadingListResponse;
+use pickpocket::ReadingList;
 
 fn main() {
     let file_name = env::args()
@@ -24,10 +24,10 @@ fn main() {
 
     let reader = BufReader::new(file);
     let mut decoder = ZlibDecoder::new(reader);
-    let reading_list: ReadingListResponse = decode_from(&mut decoder, bincode::SizeLimit::Infinite)
+    let reading_list: ReadingList = decode_from(&mut decoder, bincode::SizeLimit::Infinite)
         .expect("Could not read content from file");
 
-    for (id, reading_item) in &reading_list.list {
+    for (id, reading_item) in &reading_list {
         println!("Id:\t{id}
 Reading Item:\t{reading_item:?}
 Used url:\t{url}

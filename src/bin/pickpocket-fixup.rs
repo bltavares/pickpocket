@@ -15,7 +15,7 @@ fn main() {
     let mut favorites: BTreeSet<&str> = BTreeSet::new();
     let mut read: BTreeSet<&str> = BTreeSet::new();
 
-    for (id, reading_item) in &reading_list.list {
+    for (id, reading_item) in &reading_list {
         if reading_item.favorite() == FavoriteStatus::Favorited {
             favorites.insert(id);
         }

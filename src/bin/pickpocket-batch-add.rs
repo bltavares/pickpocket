@@ -22,7 +22,7 @@ fn main() {
     let reading_list = client.list_all();
 
     let mut url_id: BTreeMap<&str, &str> = BTreeMap::new();
-    for (id, reading_item) in &reading_list.list {
+    for (id, reading_item) in &reading_list {
         url_id.insert(reading_item.url(), id);
     }
 

@@ -23,7 +23,7 @@ fn main() {
 
     let mut url_id: BTreeMap<&str, &str> = BTreeMap::new();
     let mut cleanurl_id: BTreeMap<String, &str> = BTreeMap::new();
-    for (id, reading_item) in &reading_list.list {
+    for (id, reading_item) in &reading_list {
         url_id.insert(reading_item.url(), id);
         cleanurl_id.insert(pickpocket::cleanup_url(reading_item.url()), id);
     }

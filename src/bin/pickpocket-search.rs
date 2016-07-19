@@ -16,7 +16,7 @@ fn main() {
     };
 
     let reading_list = client.list_all();
-    for (id, reading_item) in &reading_list.list {
+    for (id, reading_item) in &reading_list {
         if reading_item.url().contains(&url) {
             println!("Id:\t{id}
 Reading Item:\t{reading_item:?}
