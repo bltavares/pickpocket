@@ -28,6 +28,8 @@ matrix:
       # Extra packages only for this job
       addons:
         apt:
+          sources:
+            sourceline: 'deb http://ports.ubuntu.com/ubuntu-ports/ trusty main universe multiverse restricted'
           packages: &aarch64_unknown_linux_gnu
             # Transparent emulation
             - qemu-user-static
@@ -42,6 +44,8 @@ matrix:
       sudo: required
       addons:
         apt:
+          sources:
+            sourceline: 'deb http://ports.ubuntu.com/ubuntu-ports/ trusty main universe multiverse restricted'
           packages: &armv7_unknown_linux_gnueabihf
             # Cross compiler and cross compiled C libraries
             - gcc-arm-linux-gnueabihf
