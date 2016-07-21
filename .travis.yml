@@ -1,9 +1,95 @@
 language: rust
-rust:
-  - stable
-  - beta
-  - nightly
+cache: cargo
+
+env:
+  global:
+    # This will be part of the release tarball
+    # TODO change the project name
+    - PROJECT_NAME=pickpocket
+    # TODO comment out this variable if you don't want to build .deb packages on all the targets.
+    - MAKE_DEB=yes
+    # TODO update these two variables. They are part of the .deb package metadata
+    - DEB_MAINTAINER="Bruno Tavares <@bltavares>"
+    - DEB_DESCRIPTION="Pocket command line manager"
+
+# AFAICT There are a few ways to set up the build jobs. This one is not the DRYest but I feel is the
+# easiest to reason about.
+# TODO Feel free to remove the channels/targets you don't need
+# NOTE Make *sure* you don't remove a reference (&foo) if you are going to dereference it (*foo)
 matrix:
-  allow_failures:
-    - rust: nightly
+  include:
+    # Stable channel
+    - os: osx
+      rust: stable
+      env: TARGET=i686-apple-darwin
+    - os: linux
+      rust: stable
+      env: TARGET=i686-unknown-linux-gnu
+      addons:
+        apt:
+          packages: &i686_unknown_linux_gnu
+            # Cross compiler and cross compiled C libraries
+            - gcc-multilib
+            # Added packages
+            - libssl-dev:i386
+            - libcrypto++-dev:i386
+    - os: osx
+      rust: stable
+      env: TARGET=x86_64-apple-darwin
+    - os: linux
+      rust: stable
+      env: TARGET=x86_64-unknown-linux-gnu
+      addons:
+        apt:
+          packages:
+            # Added packages
+            - libssl-dev
+            - libcrypto++-dev
+
+before_install:
+  - export PATH="$PATH:$HOME/.cargo/bin"
+
+install:
+  - bash scripts/install.sh
+
+script:
+  - bash scripts/script.sh
+
+before_deploy:
+  - bash scripts/before_deploy.sh
+
+deploy:
+  provider: releases
+  # TODO Regenerate this api_key for your project, this one won't work for you. Here's how:
+  # - Go to 'https://github.com/settings/tokens/new' and generate a Token with only the
+  # `public_repo` scope enabled
+  # - Call `travis encrypt $github_token` where $github_token is the token you got in the previous
+  # step and `travis` is the official Travis CI gem (see https://rubygems.org/gems/travis/)
+  # - Enter the "encrypted value" below
+  api_key:
+    secure: "ICxMkUIseLvzdnE1JCqipkYQFa43pC2Sv44HA3CcI/8bgOHNbRD81d69CnHnbXZeOAdPbX6TiMKGI3UhDYpHS65sH8Z7npr51zwcC7VMHsCzOFvBcA0fWoXyEZ0CZErD6gYrzHZnfm2TDQs0p9z8x69ULY6OaQS3UUhTl6lFHtOdWXT14lirppar80HIq8+d3k8jbsxp71mTqHqcWyGV9T7Aq6wJU0c+0nNM2W6S+nVP1FUOjF4gNrtXrtBKyY6e1vTd7nz7ZGntdQeFFjAqDLOZz+0F3k3+RW2F8WJZA/nPvREFMaBiM1+ULD7JAafrh+c+CBbugPSOYpQfM7Oqn+TCdm3UFpMu4kicJFYuDj8GTw5vDi8tS9T93OfCeAYbGJsAAFv4VJYiRUxrhtm0JksEZpfT5fNo+oqi4SCmQhtz/DIcZ9FYrKEtb9A1XmcoYkmHHHIffXRtiBTQjgwoQoEA5qZPalsS/RBiSkXvlzezu1Hy08Fw+B9avxcmMWtKxzEJq9RPC6ucbBXjA09IxJjkDB3hdSx8ciQsC4QYI/U3Yhp90xzPnpOf1HU6/9xOg9zHIknPu5bB9/tk3CqThSrA8emc5oJJAsk05F/0X/ERZ3I5f3i2werevq+fp7RElzA0yPG1oFrklEPZOD2x/VAYXrrHyWNuX5kKDfjtOGE="
+  file_glob: true
+  file: ${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.*
+  # don't delete the artifacts from previous phases
+  skip_cleanup: true
+  # deploy when a new tag is pushed
+  on:
+    # channel to use to produce the release artifacts
+    # NOTE make sure you only release *once* per target
+    # TODO you may want to pick a different channel
+    condition: $TRAVIS_RUST_VERSION = stable
+    tags: true
+
+branches:
+  only:
+    # Pushes and PR to the master branch
+    - master
+    # IMPORTANT Ruby regex to match tags. Required, or travis won't trigger deploys when a new tag
+    # is pushed. This regex matches semantic versions like v1.2.3-rc4+2016.02.22
+    - /^v\d+\.\d+\.\d+.*$/
+
+notifications:
+  email:
+    on_success: never
+
 after_success: curl https://raw.githubusercontent.com/bltavares/travis-doc-upload/master/travis-doc-upload.sh | sh
