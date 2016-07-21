@@ -32,6 +32,9 @@ matrix:
             # Transparent emulation
             - qemu-user-static
             - binfmt-support
+            # Added packages
+            - libssl-dev:arm64
+            - libcrypto++-dev:arm64
     - os: linux
       rust: stable
       env: TARGET=armv7-unknown-linux-gnueabihf
@@ -47,6 +50,9 @@ matrix:
             # Transparent emulation
             - qemu-user-static
             - binfmt-support
+            # Added packages
+            - libssl-dev:armhf
+            - libcrypto++-dev:armhf
     - os: osx
       rust: stable
       env: TARGET=i686-apple-darwin
@@ -58,15 +64,32 @@ matrix:
           packages: &i686_unknown_linux_gnu
             # Cross compiler and cross compiled C libraries
             - gcc-multilib
+            # Added packages
+            - libssl-dev:i386
+            - libcrypto++-dev:i386
     - os: osx
       rust: stable
       env: TARGET=x86_64-apple-darwin
     - os: linux
       rust: stable
       env: TARGET=x86_64-unknown-linux-gnu
+      addons:
+        apt:
+          packages:
+            # Added packages
+            - libssl-dev
+            - libcrypto++-dev
     - os: linux
       rust: stable
       env: TARGET=x86_64-unknown-linux-musl
+      addons:
+        apt:
+          packages:
+            # Added packages
+            - libssl-dev
+            - libcrypto++-dev
+            - musl-dev
+            - musl-tools
 
 before_install:
   - export PATH="$PATH:$HOME/.cargo/bin"
