@@ -92,8 +92,6 @@ matrix:
             # Added packages
             - libssl-dev
             - libcrypto++-dev
-            - musl-dev
-            - musl-tools
 
 before_install:
   - export PATH="$PATH:$HOME/.cargo/bin"
