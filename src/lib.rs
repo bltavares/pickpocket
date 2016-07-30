@@ -227,8 +227,7 @@ pub fn cleanup_url(url: &str) -> String {
     let current_host = parsed.host_str().expect("Cleaned up an url without a host");
     let starts_from = start_domain_from(current_host);
 
-    format!("{}://{}{}",
-            parsed.scheme(),
+    format!("https://{}{}",
             fixup_blogspot(&current_host[starts_from..]),
             parsed.path())
 }
@@ -240,19 +239,19 @@ mod test {
     #[test]
     fn test_clean_url_hash() {
         let url_ = "http://example.com#asdfas.fsa";
-        assert_eq!(cleanup_url(url_), "http://example.com/");
+        assert_eq!(cleanup_url(url_), "https://example.com/");
     }
 
     #[test]
     fn test_clean_url_query() {
         let url_ = "http://example.com?";
-        assert_eq!(cleanup_url(url_), "http://example.com/");
+        assert_eq!(cleanup_url(url_), "https://example.com/");
     }
 
     #[test]
     fn test_clean_url_keep_same_url() {
         let url_ = "http://another.example.com";
-        assert_eq!(cleanup_url(url_), "http://another.example.com/");
+        assert_eq!(cleanup_url(url_), "https://another.example.com/");
     }
 
     #[test]
@@ -278,6 +277,13 @@ mod test {
     #[test]
     fn test_cleanup_www() {
         let url = "https://www.this-is-a.blogspot.com.br/asdf/asdf/asdf?asdf=1";
+        assert_eq!(cleanup_url(url),
+                   "https://this-is-a.blogspot.com/asdf/asdf/asdf");
+    }
+
+    #[test]
+    fn test_cleanup_https_redirection() {
+        let url = "http://www.this-is-a.blogspot.com.br/asdf/asdf/asdf?asdf=2";
         assert_eq!(cleanup_url(url),
                    "https://this-is-a.blogspot.com/asdf/asdf/asdf");
     }
