@@ -9,6 +9,7 @@ use hyper::Url;
 use rustc_serialize::json;
 use std::collections::BTreeMap;
 use std::io::Read;
+use std::fmt::{Display, Formatter, Result};
 
 use rustc_serialize::json::DecoderError;
 
@@ -58,6 +59,17 @@ pub enum FavoriteStatus {
 pub enum Status {
     Read,
     Unread,
+}
+
+impl Display for Status {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        write!(f,
+               "{}",
+               match *self {
+                   Status::Read => "Read",
+                   Status::Unread => "Unread",
+               })
+    }
 }
 
 impl Item {
