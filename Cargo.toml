@@ -4,7 +4,7 @@ name = "pickpocket"
 version = "0.1.0"
 
 [dependencies]
-bincode = "0.5.9"
+bincode = "0.6.0"
 chrono = "0.2.18"
 flate2 = "0.2.14"
 hyper = "0.9.6"
