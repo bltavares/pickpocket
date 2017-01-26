@@ -21,7 +21,7 @@ matrix:
     # Stable channel
     - os: osx
       rust: stable
-      env: TARGET=i686-apple-darwin
+      env: TARGET=i686-apple-darwin CFLAGS="-I/usr/local/opt/openssl/include $CFLAGS" LDFLAGS="-L/usr/local/opt/openssl/lib $LDFLAGS"
     - os: linux
       rust: stable
       env: TARGET=i686-unknown-linux-gnu
@@ -35,7 +35,7 @@ matrix:
             - libcrypto++-dev:i386
     - os: osx
       rust: stable
-      env: TARGET=x86_64-apple-darwin
+      env: TARGET=x86_64-apple-darwin CFLAGS="-I/usr/local/opt/openssl/include $CFLAGS" LDFLAGS="-L/usr/local/opt/openssl/lib $LDFLAGS"
     - os: linux
       rust: stable
       env: TARGET=x86_64-unknown-linux-gnu
