@@ -5,7 +5,7 @@ version = "0.1.0"
 
 [dependencies]
 bincode = "0.6.0"
-chrono = "0.2.18"
+chrono = "0.3.0"
 flate2 = "0.2.14"
 hyper = "0.9.6"
 rustc-serialize = "0.3.16"
