@@ -2,6 +2,7 @@ extern crate bincode;
 extern crate chrono;
 extern crate flate2;
 extern crate hyper;
+extern crate hyper_native_tls;
 extern crate rustc_serialize;
 
 use hyper::header::{Connection, ContentType};
@@ -192,7 +193,7 @@ impl Client {
 
 
     fn request(&self, method: Url, payload: String) -> String {
-        let client = hyper::Client::new();
+        let client = auth::https_client();
 
         let mut res = client.post(method)
             .body(&payload)

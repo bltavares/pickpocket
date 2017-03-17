@@ -1,5 +1,7 @@
 use hyper;
 use hyper::header::{Connection, ContentType};
+use hyper::net::HttpsConnector;
+use hyper_native_tls::NativeTlsClient;
 use hyper::Url;
 use std::io::Read;
 
@@ -25,6 +27,12 @@ pub struct AuthorizationRequest {
     request_code: String,
 }
 
+pub fn https_client() -> hyper::Client {
+    let ssl = NativeTlsClient::new().expect("Could not aquire a Native TLS connector");
+    let connector = HttpsConnector::new(ssl);
+    hyper::Client::with_connector(connector)
+}
+
 impl BeginAuthentication {
     pub fn request_authorization_code(self) -> AuthorizationRequest {
         let body = self.request();
@@ -40,7 +48,7 @@ impl BeginAuthentication {
     }
 
     fn request(&self) -> String {
-        let client = hyper::Client::new();
+        let client = https_client();
 
         let method = url("/oauth/request");
         let mut res = client.post(method)
@@ -83,7 +91,7 @@ impl AuthorizationRequest {
     }
 
     fn request(&self) -> String {
-        let client = hyper::Client::new();
+        let client = https_client();
 
         let method = url("/oauth/authorize");
         let mut res = client.post(method)
