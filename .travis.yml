@@ -68,3 +68,6 @@ branches:
 notifications:
   email:
     on_success: never
+
+after_success:
+  - curl https://raw.githubusercontent.com/bltavares/travis-doc-upload/master/travis-doc-upload.sh | bash
