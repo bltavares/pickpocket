@@ -11,8 +11,6 @@ env:
     - CRATE_NAME=pickpocket
 
 matrix:
-  # TODO These are all the build jobs. Adjust as necessary. Comment out what you
-  # don't need
   include:
     # Linux
     - env: TARGET=i686-unknown-linux-gnu
@@ -53,16 +51,16 @@ matrix:
 before_install: set -e
 
 install:
-  - sh ci/install.sh
+  - sh scripts/install.sh
   - source ~/.cargo/env || true
 
 script:
-  - bash ci/script.sh
+  - bash scripts/script.sh
 
 after_script: set +e
 
 before_deploy:
-  - sh ci/before_deploy.sh
+  - sh scripts/before_deploy.sh
 
 deploy:
   api_key:
