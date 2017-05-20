@@ -51,7 +51,7 @@ matrix:
 before_install: set -e
 
 install:
-  - sh scripts/install.sh
+  - bash scripts/install.sh
   - source ~/.cargo/env || true
 
 script:
@@ -60,7 +60,7 @@ script:
 after_script: set +e
 
 before_deploy:
-  - sh scripts/before_deploy.sh
+  - bash scripts/before_deploy.sh
 
 deploy:
   api_key:
@@ -86,4 +86,5 @@ notifications:
   email:
     on_success: never
 
-after_success: curl https://raw.githubusercontent.com/bltavares/travis-doc-upload/master/travis-doc-upload.sh | sh
+after_success: 
+  - curl https://raw.githubusercontent.com/bltavares/travis-doc-upload/master/travis-doc-upload.sh | bash
