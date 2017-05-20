@@ -1,54 +1,16 @@
-# `before_deploy` phase: here we package the build artifacts
+# This script takes care of building your crate and packaging it for release
 
 set -ex
 
-. $(dirname $0)/utils.sh
-
-# Generate artifacts for release
-mk_artifacts() {
-    cargo build --target $TARGET --release
-}
-
-mk_tarball() {
-    # create a "staging" directory
-    local td=$(mktempd)
-    local out_dir=$(pwd)
-
-    # NOTE All Cargo build artifacts will be under the 'target/$TARGET/{debug,release}'
-    cp target/$TARGET/release/pickpocket-* $td
-
-    pushd $td
-
-    # release tarball will look like 'rust-everywhere-v1.2.3-x86_64-unknown-linux-gnu.tar.gz'
-    tar czf $out_dir/${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.tar.gz *
-
-    popd
-    rm -r $td
-}
-
-# Package your artifacts in a .deb file
-# NOTE right now you can only package binaries using the `dobin` command. Simply call
-# `dobin [file..]` to include one or more binaries in your .deb package. I'll add more commands to
-# install other things like manpages (`doman`) as the needs arise.
-# XXX This .deb packaging is minimal -- just to make your app installable via `dpkg` -- and doesn't
-# fully conform to Debian packaging guideliens (`lintian` raises a few warnings/errors)
 mk_deb() {
-    dobin target/$TARGET/release/pickpocket-*
-}
+    if [ ! -z $MAKE_DEB ]; then
+        dtd=$(mktempd)
+        mkdir -p $dtd/debian/usr/bin
 
-main() {
-    mk_artifacts
-    mk_tarball
+        dobin target/$TARGET/release/pickpocket-*
 
-    if [ $TRAVIS_OS_NAME = linux ]; then
-        if [ ! -z $MAKE_DEB ]; then
-            dtd=$(mktempd)
-            mkdir -p $dtd/debian/usr/bin
-
-            mk_deb
-
-            mkdir -p $dtd/debian/DEBIAN
-            cat >$dtd/debian/DEBIAN/control <<EOF
+        mkdir -p $dtd/debian/DEBIAN
+        cat >$dtd/debian/DEBIAN/control <<EOF
 Package: $PROJECT_NAME
 Version: ${TRAVIS_TAG#v}
 Architecture: $(architecture $TARGET)
@@ -56,11 +18,40 @@ Maintainer: $DEB_MAINTAINER
 Description: $DEB_DESCRIPTION
 EOF
 
-            fakeroot dpkg-deb --build $dtd/debian
-            mv $dtd/debian.deb $PROJECT_NAME-$TRAVIS_TAG-$TARGET.deb
-            rm -r $dtd
-        fi
+        fakeroot dpkg-deb --build $dtd/debian
+        mv $dtd/debian.deb $PROJECT_NAME-$TRAVIS_TAG-$TARGET.deb
+        rm -r $dtd
     fi
 }
 
+main() {
+    local src=$(pwd) \
+          stage=
 
+    case $TRAVIS_OS_NAME in
+        linux)
+            stage=$(mktemp -d)
+            ;;
+        osx)
+            stage=$(mktemp -d -t tmp)
+            ;;
+    esac
+
+    test -f Cargo.lock || cargo generate-lockfile
+
+    cross rustc --target $TARGET --release -- -C lto
+
+    cp target/$TARGET/release/pickpocket $stage/
+
+    cd $stage
+    tar czf $src/$CRATE_NAME-$TRAVIS_TAG-$TARGET.tar.gz *
+    cd $src
+
+    if [ $TRAVIS_OS_NAME = linux ]; then
+        mk_deb
+    fi
+
+    rm -rf $stage
+}
+
+main

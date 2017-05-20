@@ -1,92 +1,88 @@
+# Based on the "trust" template v0.1.1
+# https://github.com/japaric/trust/tree/v0.1.1
+
+dist: trusty
 language: rust
-cache: cargo
+services: docker
+sudo: required
 
 env:
   global:
-    # This will be part of the release tarball
-    # TODO change the project name
-    - PROJECT_NAME=pickpocket
-    # TODO comment out this variable if you don't want to build .deb packages on all the targets.
-    - MAKE_DEB=yes
-    # TODO update these two variables. They are part of the .deb package metadata
-    - DEB_MAINTAINER="Bruno Tavares <@bltavares>"
-    - DEB_DESCRIPTION="Pocket command line manager"
+    - CRATE_NAME=pickpocket
 
-# AFAICT There are a few ways to set up the build jobs. This one is not the DRYest but I feel is the
-# easiest to reason about.
-# TODO Feel free to remove the channels/targets you don't need
-# NOTE Make *sure* you don't remove a reference (&foo) if you are going to dereference it (*foo)
 matrix:
+  # TODO These are all the build jobs. Adjust as necessary. Comment out what you
+  # don't need
   include:
-    # Stable channel
-    - os: osx
-      rust: stable
-      env: TARGET=i686-apple-darwin CFLAGS="-I/usr/local/opt/openssl/include $CFLAGS" LDFLAGS="-L/usr/local/opt/openssl/lib $LDFLAGS"
-    - os: linux
-      rust: stable
-      env: TARGET=i686-unknown-linux-gnu
-      addons:
-        apt:
-          packages: &i686_unknown_linux_gnu
-            # Cross compiler and cross compiled C libraries
-            - gcc-multilib
-            # Added packages
-            - libssl-dev:i386
-            - libcrypto++-dev:i386
-    - os: osx
-      rust: stable
-      env: TARGET=x86_64-apple-darwin CFLAGS="-I/usr/local/opt/openssl/include $CFLAGS" LDFLAGS="-L/usr/local/opt/openssl/lib $LDFLAGS"
-    - os: linux
-      rust: stable
-      env: TARGET=x86_64-unknown-linux-gnu
-      addons:
-        apt:
-          packages:
-            # Added packages
-            - libssl-dev
-            - libcrypto++-dev
+    # Linux
+    - env: TARGET=i686-unknown-linux-gnu
+    - env: TARGET=i686-unknown-linux-musl
+    - env: TARGET=x86_64-unknown-linux-gnu
+    - env: TARGET=x86_64-unknown-linux-musl
 
-before_install:
-  - export PATH="$PATH:$HOME/.cargo/bin"
+    # OSX
+    - env: TARGET=i686-apple-darwin
+      os: osx
+    - env: TARGET=x86_64-apple-darwin
+      os: osx
+
+    # *BSD
+    - env: TARGET=i686-unknown-freebsd DISABLE_TESTS=1
+    - env: TARGET=x86_64-unknown-freebsd DISABLE_TESTS=1
+    - env: TARGET=x86_64-unknown-netbsd DISABLE_TESTS=1
+
+    # Other architectures
+    - env: TARGET=aarch64-unknown-linux-gnu
+    - env: TARGET=armv7-unknown-linux-gnueabihf
+    - env: TARGET=mips-unknown-linux-gnu
+    - env: TARGET=mips64-unknown-linux-gnuabi64
+    - env: TARGET=mips64el-unknown-linux-gnuabi64
+    - env: TARGET=mipsel-unknown-linux-gnu
+    - env: TARGET=powerpc-unknown-linux-gnu
+    - env: TARGET=powerpc64-unknown-linux-gnu
+    - env: TARGET=powerpc64le-unknown-linux-gnu
+    - env: TARGET=s390x-unknown-linux-gnu DISABLE_TESTS=1
+
+    # Testing other channels
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: nightly
+    - env: TARGET=x86_64-apple-darwin
+      os: osx
+      rust: nightly
+
+before_install: set -e
 
 install:
-  - bash scripts/install.sh
+  - sh ci/install.sh
+  - source ~/.cargo/env || true
 
 script:
-  - bash scripts/script.sh
+  - bash ci/script.sh
+
+after_script: set +e
 
 before_deploy:
-  - bash scripts/before_deploy.sh
+  - sh ci/before_deploy.sh
 
 deploy:
-  provider: releases
-  # TODO Regenerate this api_key for your project, this one won't work for you. Here's how:
-  # - Go to 'https://github.com/settings/tokens/new' and generate a Token with only the
-  # `public_repo` scope enabled
-  # - Call `travis encrypt $github_token` where $github_token is the token you got in the previous
-  # step and `travis` is the official Travis CI gem (see https://rubygems.org/gems/travis/)
-  # - Enter the "encrypted value" below
   api_key:
     secure: "ICxMkUIseLvzdnE1JCqipkYQFa43pC2Sv44HA3CcI/8bgOHNbRD81d69CnHnbXZeOAdPbX6TiMKGI3UhDYpHS65sH8Z7npr51zwcC7VMHsCzOFvBcA0fWoXyEZ0CZErD6gYrzHZnfm2TDQs0p9z8x69ULY6OaQS3UUhTl6lFHtOdWXT14lirppar80HIq8+d3k8jbsxp71mTqHqcWyGV9T7Aq6wJU0c+0nNM2W6S+nVP1FUOjF4gNrtXrtBKyY6e1vTd7nz7ZGntdQeFFjAqDLOZz+0F3k3+RW2F8WJZA/nPvREFMaBiM1+ULD7JAafrh+c+CBbugPSOYpQfM7Oqn+TCdm3UFpMu4kicJFYuDj8GTw5vDi8tS9T93OfCeAYbGJsAAFv4VJYiRUxrhtm0JksEZpfT5fNo+oqi4SCmQhtz/DIcZ9FYrKEtb9A1XmcoYkmHHHIffXRtiBTQjgwoQoEA5qZPalsS/RBiSkXvlzezu1Hy08Fw+B9avxcmMWtKxzEJq9RPC6ucbBXjA09IxJjkDB3hdSx8ciQsC4QYI/U3Yhp90xzPnpOf1HU6/9xOg9zHIknPu5bB9/tk3CqThSrA8emc5oJJAsk05F/0X/ERZ3I5f3i2werevq+fp7RElzA0yPG1oFrklEPZOD2x/VAYXrrHyWNuX5kKDfjtOGE="
   file_glob: true
-  file: ${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.*
-  # don't delete the artifacts from previous phases
-  skip_cleanup: true
-  # deploy when a new tag is pushed
+  file: $CRATE_NAME-$TRAVIS_TAG-$TARGET.*
   on:
-    # channel to use to produce the release artifacts
-    # NOTE make sure you only release *once* per target
-    # TODO you may want to pick a different channel
     condition: $TRAVIS_RUST_VERSION = stable
     tags: true
+  provider: releases
+  skip_cleanup: true
+
+cache: cargo
+before_cache:
+  - chmod -R a+r $HOME/.cargo
 
 branches:
   only:
-    # Pushes and PR to the master branch
-    - master
-    # IMPORTANT Ruby regex to match tags. Required, or travis won't trigger deploys when a new tag
-    # is pushed. This regex matches semantic versions like v1.2.3-rc4+2016.02.22
     - /^v\d+\.\d+\.\d+.*$/
+    - master
 
 notifications:
   email:
