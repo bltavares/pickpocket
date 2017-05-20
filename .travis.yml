@@ -70,4 +70,4 @@ notifications:
     on_success: never
 
 after_success:
-  - curl https://raw.githubusercontent.com/bltavares/travis-doc-upload/master/travis-doc-upload.sh | bash
+  - curl https://raw.githubusercontent.com/bltavares/travis-doc-upload/master/travis-doc-upload.sh | bash || true
