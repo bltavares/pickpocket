@@ -71,3 +71,7 @@ notifications:
 
 after_success:
   - curl https://raw.githubusercontent.com/bltavares/travis-doc-upload/master/travis-doc-upload.sh | bash || true
+
+addons:
+  ssh_known_hosts:
+    - github.com
