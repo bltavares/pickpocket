@@ -82,11 +82,7 @@ impl Item {
 
     pub fn title(&self) -> &str {
         let title = self.resolved_title.as_ref().unwrap_or(&self.given_title);
-        if title.is_empty() {
-            self.url()
-        } else {
-            title
-        }
+        if title.is_empty() { self.url() } else { title }
     }
 
     pub fn favorite(&self) -> FavoriteStatus {
@@ -233,11 +229,7 @@ fn fixup_blogspot(url: &str) -> String {
 }
 
 fn start_domain_from(url: &str) -> usize {
-    if url.starts_with("www.") {
-        4
-    } else {
-        0
-    }
+    if url.starts_with("www.") { 4 } else { 0 }
 }
 
 pub fn cleanup_url(url: &str) -> String {
