@@ -1,6 +1,5 @@
 CARGO := cargo
-CLIPPY_COMMAND := rustup run nightly cargo clippy --release
-CLIPPY_ARGS := -Dclippy
+CLIPPY_COMMAND := cargo +nightly clippy
 
 BINARIES := $(patsubst %.rs,%,$(notdir $(wildcard src/bin/*.rs)))
 BINARIES_CHECK_TARGETS := $(addprefix check-,$(BINARIES))
@@ -23,16 +22,9 @@ check-lib:
 .PHONY: check # Quickly validate all binaries compiles
 check: | check-lib $(BINARIES_CHECK_TARGETS)
 
-.PHONY: $(BINARIES_LINT_TARGETS)
-$(BINARIES_LINT_TARGETS):
-	$(CLIPPY_COMMAND) --bin $(patsubst lint-%,%,$@) -- $(CLIPPY_ARGS)
-
-.PHONY: lint-lib
-lint-lib:
-	$(CLIPPY_COMMAND) --lib -- $(CLIPPY_ARGS)
-
 .PHONY: lint # Lint all binaries against clippy
-lint: | lint-lib $(BINARIES_LINT_TARGETS)
+lint:
+	$(CLIPPY_COMMAND)
 
 .PHONY: outdated # List outdated dependency information
 outdated:
