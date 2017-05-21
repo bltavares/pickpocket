@@ -1,8 +1,7 @@
 use std::io::{BufWriter, BufReader};
 
-use bincode::SizeLimit;
-use bincode::rustc_serialize::decode_from;
-use bincode::rustc_serialize::encode_into;
+
+use bincode::{serialize_into, deserialize_from, Infinite};
 
 use flate2::Compression;
 use flate2::read::ZlibDecoder;
@@ -49,7 +48,7 @@ impl FileClient {
         let reader = BufReader::new(file);
         let mut decoder = ZlibDecoder::new(reader);
 
-        let parsed = try!(decode_from(&mut decoder, SizeLimit::Infinite)
+        let parsed = try!(deserialize_from(&mut decoder, Infinite)
             .map_err(|_| format!("Could not read content from file: {}", &file_name)));
 
         Ok(FileClient { list: parsed })
@@ -65,7 +64,7 @@ impl FileClient {
 
         let writer = BufWriter::new(file);
         let mut encoder = ZlibEncoder::new(writer, Compression::Best);
-        encode_into(&self.list, &mut encoder, SizeLimit::Infinite)
+        serialize_into(&mut encoder, &self.list, Infinite)
             .map_err(|_| "Failed to encode the content".into())
     }
 }
