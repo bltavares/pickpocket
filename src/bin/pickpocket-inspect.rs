@@ -4,8 +4,7 @@ use std::env;
 
 fn main() {
     let file_name = env::args()
-        .skip(1)
-        .next()
+        .nth(2)
         .expect("Expected an file as argument");
 
     let client = match pickpocket::cli::FileClient::from_cache(&file_name) {
