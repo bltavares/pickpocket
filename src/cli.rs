@@ -1,8 +1,7 @@
 use std::io::{BufWriter, BufReader};
 
-use bincode::SizeLimit;
-use bincode::rustc_serialize::decode_from;
-use bincode::rustc_serialize::encode_into;
+
+use bincode::{serialize_into, deserialize_from, Infinite};
 
 use flate2::Compression;
 use flate2::read::ZlibDecoder;
@@ -16,16 +15,16 @@ use std::fs::File;
 
 pub fn client_from_env_vars() -> Result<Client, String> {
     let consumer_env_key = "POCKET_CONSUMER_KEY";
-    let consumer_key = try!(env::var(consumer_env_key).map_err(|_| {
-        format!("Consumer key should be available on the environment variable {}",
-                consumer_env_key)
-    }));
+    let consumer_key = env::var(consumer_env_key).map_err(|_| {
+            format!("Consumer key should be available on the environment variable {}",
+                    consumer_env_key)
+        })?;
 
     let auth_env_code = "POCKET_AUTHORIZATION_CODE";
-    let authorization_code = try!(env::var(auth_env_code).map_err(|_| {
-        format!("Authorization code should be available on the environment variable {}",
-                auth_env_code)
-    }));
+    let authorization_code = env::var(auth_env_code).map_err(|_| {
+            format!("Authorization code should be available on the environment variable {}",
+                    auth_env_code)
+        })?;
 
     Ok(Client {
         consumer_key: consumer_key,
@@ -43,14 +42,13 @@ impl FileClient {
     }
 
     pub fn from_cache(file_name: &str) -> Result<Self, String> {
-        let file = try!(File::open(&file_name)
-            .map_err(|_| format!("Couldn't open {}", &file_name)));
+        let file = File::open(&file_name).map_err(|_| format!("Couldn't open {}", &file_name))?;
 
         let reader = BufReader::new(file);
         let mut decoder = ZlibDecoder::new(reader);
 
-        let parsed = try!(decode_from(&mut decoder, SizeLimit::Infinite)
-            .map_err(|_| format!("Could not read content from file: {}", &file_name)));
+        let parsed = deserialize_from(&mut decoder, Infinite)
+            .map_err(|_| format!("Could not read content from file: {}", &file_name))?;
 
         Ok(FileClient { list: parsed })
     }
@@ -60,12 +58,11 @@ impl FileClient {
     }
 
     pub fn write_cache(&self, file_name: &str) -> Result<(), String> {
-        let file = try!(File::create(&file_name)
-            .map_err(|_| format!("Couldn't open {}", &file_name)));
+        let file = File::create(&file_name).map_err(|_| format!("Couldn't open {}", &file_name))?;
 
         let writer = BufWriter::new(file);
         let mut encoder = ZlibEncoder::new(writer, Compression::Best);
-        encode_into(&self.list, &mut encoder, SizeLimit::Infinite)
+        serialize_into(&mut encoder, &self.list, Infinite)
             .map_err(|_| "Failed to encode the content".into())
     }
 }

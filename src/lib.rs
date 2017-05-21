@@ -1,18 +1,20 @@
+extern crate serde;
+extern crate serde_json;
+
+#[macro_use]
+extern crate serde_derive;
+
 extern crate bincode;
 extern crate chrono;
 extern crate flate2;
 extern crate hyper;
 extern crate hyper_native_tls;
-extern crate rustc_serialize;
 
 use hyper::header::{Connection, ContentType};
 use hyper::Url;
-use rustc_serialize::json;
 use std::collections::BTreeMap;
 use std::io::Read;
 use std::fmt::{Display, Formatter, Result};
-
-use rustc_serialize::json::DecoderError;
 
 mod auth;
 pub mod cli;
@@ -21,7 +23,7 @@ pub use auth::*;
 
 const DEFAULT_COUNT: u32 = 5000;
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Item {
     given_url: String,
     resolved_url: Option<String>,
@@ -33,7 +35,7 @@ pub struct Item {
 
 pub type ReadingList = BTreeMap<String, Item>;
 
-#[derive(RustcDecodable)]
+#[derive(Deserialize)]
 struct ReadingListResponse {
     list: ReadingList,
 }
@@ -41,7 +43,7 @@ struct ReadingListResponse {
 enum ResponseState {
     Parsed(ReadingListResponse),
     NoMore,
-    Error(DecoderError),
+    Error(serde_json::Error),
 }
 
 enum Action {
@@ -80,11 +82,7 @@ impl Item {
 
     pub fn title(&self) -> &str {
         let title = self.resolved_title.as_ref().unwrap_or(&self.given_title);
-        if title.is_empty() {
-            self.url()
-        } else {
-            title
-        }
+        if title.is_empty() { self.url() } else { title }
     }
 
     pub fn favorite(&self) -> FavoriteStatus {
@@ -209,12 +207,15 @@ impl Client {
 }
 
 fn parse_all_response(response: &str) -> ResponseState {
-    match json::decode::<ReadingListResponse>(response) {
+    match serde_json::from_str::<ReadingListResponse>(response) {
         Ok(r) => ResponseState::Parsed(r),
-        Err(DecoderError::ExpectedError(ref x, ref y)) if x == "Object" && y == "[]" => {
-            ResponseState::NoMore
+        Err(e) => {
+            if e.is_data() {
+                ResponseState::NoMore
+            } else {
+                ResponseState::Error(e)
+            }
         }
-        Err(e) => ResponseState::Error(e),
     }
 }
 
@@ -228,11 +229,7 @@ fn fixup_blogspot(url: &str) -> String {
 }
 
 fn start_domain_from(url: &str) -> usize {
-    if url.starts_with("www.") {
-        4
-    } else {
-        0
-    }
+    if url.starts_with("www.") { 4 } else { 0 }
 }
 
 pub fn cleanup_url(url: &str) -> String {
