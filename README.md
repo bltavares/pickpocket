@@ -1,4 +1,4 @@
-# pickpocket
+# pickpocket [![Build Status](https://travis-ci.org/bltavares/pickpocket.svg?branch=master)](https://travis-ci.org/bltavares/pickpocket)
 Pocket command line manager
 
 ## Documentation
