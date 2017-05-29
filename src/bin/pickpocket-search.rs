@@ -4,7 +4,7 @@ use std::env;
 
 fn main() {
     let url = env::args()
-        .nth(2)
+        .nth(1)
         .expect("Expected an needle as argument");
 
     let client = match pickpocket::cli::client_from_env_vars() {

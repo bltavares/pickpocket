@@ -6,7 +6,7 @@ use pickpocket::cli::*;
 
 fn main() {
     let file_name = env::args()
-        .nth(2)
+        .nth(1)
         .expect("Expected an file as argument");
 
     let client = match client_from_env_vars() {
