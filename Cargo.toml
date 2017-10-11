@@ -5,7 +5,7 @@ version = "0.1.0"
 
 [dependencies]
 bincode = "0.8.0"
-chrono = "0.3.1"
+chrono = "0.3.0"
 flate2 = "0.2.19"
 hyper = "0.10.10"
 hyper-native-tls = "0.2.2"
