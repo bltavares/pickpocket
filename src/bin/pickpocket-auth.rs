@@ -12,31 +12,40 @@ fn consumer_key() -> String {
         Ok(val) => val,
         Err(_) => {
             print!("Please, type in your consumer key: ");
-            io::stdout().flush().expect("Could not write message to terminal");
+            io::stdout()
+                .flush()
+                .expect("Could not write message to terminal");
 
             let mut input = String::new();
-            io::stdin().read_line(&mut input).expect("Could not read consumer key from terminal");
+            io::stdin()
+                .read_line(&mut input)
+                .expect("Could not read consumer key from terminal");
             input
         }
     }
 }
 
 fn main() {
-    let authorization_request = BeginAuthentication { consumer_key: consumer_key() }
-        .request_authorization_code();
+    let authorization_request = BeginAuthentication {
+        consumer_key: consumer_key(),
+    }.request_authorization_code();
 
     println!("Please visit {}", authorization_request.authorization_url());
     println!("Press enter after authorizing with Pocket");
 
     let mut input = String::new();
-    io::stdin().read_line(&mut input).expect("Could not read authorizing code from terminal");
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Could not read authorizing code from terminal");
 
     let auth = authorization_request.request_authorized_code();
     print_auth_as_env_variables(&auth);
 }
 
 fn print_auth_as_env_variables(auth: &Client) {
-    println!("export POCKET_AUTHORIZATION_CODE=\"{}\"",
-             &auth.authorization_code);
+    println!(
+        "export POCKET_AUTHORIZATION_CODE=\"{}\"",
+        &auth.authorization_code
+    );
     println!("export POCKET_CONSUMER_KEY=\"{}\"", &auth.consumer_key);
 }

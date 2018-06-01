@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::env;
 use std::fs::File;
-use std::io::{BufReader, BufRead, Lines};
+use std::io::{BufRead, BufReader, Lines};
 
 use cleanup_url;
 use cli::*;
@@ -61,18 +61,16 @@ impl BatchApp {
     pub fn get(&self, url: &str) -> Option<&str> {
         match self.url_id.get(url) {
             Some(x) => Some(x),
-            None => {
-                match self.clean_url_id.get(&cleanup_url(url)) {
-                    Some(x) => Some(x),
-                    None => None,
-                }
-            }
+            None => match self.clean_url_id.get(&cleanup_url(url)) {
+                Some(x) => Some(x),
+                None => None,
+            },
         }
     }
 
     pub fn file_lines(&self) -> Lines<BufReader<File>> {
-        let file = File::open(&self.file_name)
-            .expect(&format!("Couldn't open {}", &self.file_name));
+        let file =
+            File::open(&self.file_name).expect(&format!("Couldn't open {}", &self.file_name));
 
         BufReader::new(file).lines()
     }

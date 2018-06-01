@@ -84,7 +84,11 @@ impl Item {
 
     pub fn title(&self) -> &str {
         let title = self.resolved_title.as_ref().unwrap_or(&self.given_title);
-        if title.is_empty() { self.url() } else { title }
+        if title.is_empty() {
+            self.url()
+        } else {
+            title
+        }
     }
 
     pub fn favorite(&self) -> FavoriteStatus {
@@ -106,19 +110,22 @@ impl Item {
 
 impl Client {
     pub fn mark_as_read<'a, T>(&self, ids: T)
-        where T: IntoIterator<Item = &'a str>
+    where
+        T: IntoIterator<Item = &'a str>,
     {
         self.modify(Action::Archive, ids);
     }
 
     pub fn mark_as_favorite<'a, T>(&self, ids: T)
-        where T: IntoIterator<Item = &'a str>
+    where
+        T: IntoIterator<Item = &'a str>,
     {
         self.modify(Action::Favorite, ids);
     }
 
     pub fn add_urls<'a, T>(&self, urls: T)
-        where T: IntoIterator<Item = &'a str>
+    where
+        T: IntoIterator<Item = &'a str>,
     {
         self.modify(Action::Add, urls);
     }
@@ -130,7 +137,8 @@ impl Client {
 
         loop {
             let method = url("/get");
-            let payload = format!(r##"{{ "consumer_key":"{}",
+            let payload = format!(
+                r##"{{ "consumer_key":"{}",
                                "access_token":"{}",
                                "sort":"site",
                                "state":"all",
@@ -138,10 +146,11 @@ impl Client {
                                "count":"{}",
                                "offset":"{}"
                                }}"##,
-                                  &self.consumer_key,
-                                  &self.authorization_code,
-                                  DEFAULT_COUNT,
-                                  (offset * DEFAULT_COUNT));
+                &self.consumer_key,
+                &self.authorization_code,
+                DEFAULT_COUNT,
+                (offset * DEFAULT_COUNT)
+            );
 
             let response = self.request(method, payload);
             match parse_all_response(&response) {
@@ -158,7 +167,8 @@ impl Client {
     }
 
     fn modify<'a, T>(&self, action: Action, ids: T)
-        where T: IntoIterator<Item = &'a str>
+    where
+        T: IntoIterator<Item = &'a str>,
     {
         let method = url("/send");
         let action_verb = match action {
@@ -173,29 +183,30 @@ impl Client {
         let time = chrono::UTC::now().timestamp();
         let actions: Vec<String> = ids.into_iter()
             .map(|id| {
-                format!(r##"{{ "action": "{}", "{}": "{}", "time": "{}" }}"##,
-                        action_verb,
-                        item_key,
-                        id,
-                        time)
+                format!(
+                    r##"{{ "action": "{}", "{}": "{}", "time": "{}" }}"##,
+                    action_verb, item_key, id, time
+                )
             })
             .collect();
-        let payload = format!(r##"{{ "consumer_key":"{}",
+        let payload = format!(
+            r##"{{ "consumer_key":"{}",
                                "access_token":"{}",
                                "actions": [{}]
                                }}"##,
-                              &self.consumer_key,
-                              &self.authorization_code,
-                              actions.join(", "));
+            &self.consumer_key,
+            &self.authorization_code,
+            actions.join(", ")
+        );
 
         self.request(method, payload);
     }
 
-
     fn request(&self, method: Url, payload: String) -> String {
         let client = auth::https_client();
 
-        let mut res = client.post(method)
+        let mut res = client
+            .post(method)
             .body(&payload)
             .header(ContentType::json())
             .header(Connection::close())
@@ -203,7 +214,8 @@ impl Client {
             .expect(&format!("Coulnd't make request with payload: {}", &payload));
 
         let mut body = String::new();
-        res.read_to_string(&mut body).expect("Could not read the HTTP request's body");
+        res.read_to_string(&mut body)
+            .expect("Could not read the HTTP request's body");
         body
     }
 }
@@ -231,7 +243,11 @@ fn fixup_blogspot(url: &str) -> String {
 }
 
 fn start_domain_from(url: &str) -> usize {
-    if url.starts_with("www.") { 4 } else { 0 }
+    if url.starts_with("www.") {
+        4
+    } else {
+        0
+    }
 }
 
 pub fn cleanup_url(url: &str) -> String {
@@ -239,9 +255,11 @@ pub fn cleanup_url(url: &str) -> String {
     let current_host = parsed.host_str().expect("Cleaned up an url without a host");
     let starts_from = start_domain_from(current_host);
 
-    format!("https://{}{}",
-            fixup_blogspot(&current_host[starts_from..]),
-            parsed.path())
+    format!(
+        "https://{}{}",
+        fixup_blogspot(&current_host[starts_from..]),
+        parsed.path()
+    )
 }
 
 #[cfg(test)]
@@ -275,29 +293,37 @@ mod test {
     #[test]
     fn test_cleanup_blogspot_first_tld() {
         let url = "https://this-is-a.blogspot.cl/asdf/asdf/asdf?asdf=1";
-        assert_eq!(cleanup_url(url),
-                   "https://this-is-a.blogspot.com/asdf/asdf/asdf");
+        assert_eq!(
+            cleanup_url(url),
+            "https://this-is-a.blogspot.com/asdf/asdf/asdf"
+        );
     }
 
     #[test]
     fn test_cleanup_blogspot_second_tld() {
         let url = "https://this-is-a.blogspot.com.br/asdf/asdf/asdf?asdf=1";
-        assert_eq!(cleanup_url(url),
-                   "https://this-is-a.blogspot.com/asdf/asdf/asdf");
+        assert_eq!(
+            cleanup_url(url),
+            "https://this-is-a.blogspot.com/asdf/asdf/asdf"
+        );
     }
 
     #[test]
     fn test_cleanup_www() {
         let url = "https://www.this-is-a.blogspot.com.br/asdf/asdf/asdf?asdf=1";
-        assert_eq!(cleanup_url(url),
-                   "https://this-is-a.blogspot.com/asdf/asdf/asdf");
+        assert_eq!(
+            cleanup_url(url),
+            "https://this-is-a.blogspot.com/asdf/asdf/asdf"
+        );
     }
 
     #[test]
     fn test_cleanup_https_redirection() {
         let url = "http://www.this-is-a.blogspot.com.br/asdf/asdf/asdf?asdf=2";
-        assert_eq!(cleanup_url(url),
-                   "https://this-is-a.blogspot.com/asdf/asdf/asdf");
+        assert_eq!(
+            cleanup_url(url),
+            "https://this-is-a.blogspot.com/asdf/asdf/asdf"
+        );
     }
 }
 

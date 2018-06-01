@@ -1,7 +1,6 @@
-use std::io::{BufWriter, BufReader};
+use std::io::{BufReader, BufWriter};
 
-
-use bincode::{serialize_into, deserialize_from, Infinite};
+use bincode::{deserialize_from, serialize_into, Infinite};
 
 use flate2::Compression;
 use flate2::read::ZlibDecoder;
@@ -16,15 +15,19 @@ use std::fs::File;
 pub fn client_from_env_vars() -> Result<Client, String> {
     let consumer_env_key = "POCKET_CONSUMER_KEY";
     let consumer_key = env::var(consumer_env_key).map_err(|_| {
-            format!("Consumer key should be available on the environment variable {}",
-                    consumer_env_key)
-        })?;
+        format!(
+            "Consumer key should be available on the environment variable {}",
+            consumer_env_key
+        )
+    })?;
 
     let auth_env_code = "POCKET_AUTHORIZATION_CODE";
     let authorization_code = env::var(auth_env_code).map_err(|_| {
-            format!("Authorization code should be available on the environment variable {}",
-                    auth_env_code)
-        })?;
+        format!(
+            "Authorization code should be available on the environment variable {}",
+            auth_env_code
+        )
+    })?;
 
     Ok(Client {
         consumer_key: consumer_key,

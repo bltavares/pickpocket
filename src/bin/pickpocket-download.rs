@@ -5,9 +5,7 @@ use std::env;
 use pickpocket::cli::*;
 
 fn main() {
-    let file_name = env::args()
-        .nth(1)
-        .expect("Expected an file as argument");
+    let file_name = env::args().nth(1).expect("Expected an file as argument");
 
     let client = match client_from_env_vars() {
         Ok(client) => client,
@@ -15,5 +13,7 @@ fn main() {
     };
 
     let cli_client = FileClient::from_online(client.list_all());
-    cli_client.write_cache(&file_name).expect("Could not write to cache");
+    cli_client
+        .write_cache(&file_name)
+        .expect("Could not write to cache");
 }

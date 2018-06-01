@@ -99,17 +99,20 @@ impl AuthorizationRequest {
         let client = https_client();
 
         let method = url("/oauth/authorize");
-        let mut res = client.post(method)
-            .body(&format!("consumer_key={}&code={}",
-                           &self.consumer_key,
-                           &self.request_code))
+        let mut res = client
+            .post(method)
+            .body(&format!(
+                "consumer_key={}&code={}",
+                &self.consumer_key, &self.request_code
+            ))
             .header(ContentType::form_url_encoded())
             .header(Connection::close())
             .send()
             .expect("Could not make authorization request");
 
         let mut body = String::new();
-        res.read_to_string(&mut body).expect("Could not read authorization body response");
+        res.read_to_string(&mut body)
+            .expect("Could not read authorization body response");
         body
     }
 }
