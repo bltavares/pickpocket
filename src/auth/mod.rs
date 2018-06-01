@@ -51,26 +51,30 @@ impl BeginAuthentication {
         let client = https_client();
 
         let method = url("/oauth/request");
-        let mut res = client.post(method)
-            .body(&format!("consumer_key={}&redirect_uri={}",
-                           &self.consumer_key,
-                           REDIRECT_URL))
+        let mut res = client
+            .post(method)
+            .body(&format!(
+                "consumer_key={}&redirect_uri={}",
+                &self.consumer_key, REDIRECT_URL
+            ))
             .header(ContentType::form_url_encoded())
             .header(Connection::close())
             .send()
             .expect("Could not request OAuth authorization");
 
         let mut body = String::new();
-        res.read_to_string(&mut body).expect("Could not read OAuth request body");
+        res.read_to_string(&mut body)
+            .expect("Could not read OAuth request body");
         body
     }
 }
 
 impl AuthorizationRequest {
     pub fn authorization_url(&self) -> String {
-        format!("https://getpocket.com/auth/authorize?request_token={}&redirect_uri={}",
-                &self.request_code,
-                REDIRECT_URL)
+        format!(
+            "https://getpocket.com/auth/authorize?request_token={}&redirect_uri={}",
+            &self.request_code, REDIRECT_URL
+        )
     }
 
     pub fn request_authorized_code(self) -> Client {
@@ -79,7 +83,8 @@ impl AuthorizationRequest {
             .skip(1)
             .next()
             .expect("Could not extract authorization line from response");
-        let code = first_value.split('&')
+        let code = first_value
+            .split('&')
             .next()
             .expect("Could not extract authorization code from response")
             .to_owned();

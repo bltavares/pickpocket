@@ -66,28 +66,14 @@ pub enum Status {
 
 impl Display for Status {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        write!(f,
-               "{}",
-               match *self {
-                   Status::Read => "Read",
-                   Status::Unread => "Unread",
-               })
-    }
-}
-
-pub trait ByUrl {
-    fn by_url(&self) -> BTreeMap<&str, &Item>;
-}
-
-impl ByUrl for ReadingList {
-    fn by_url(&self) -> BTreeMap<&str, &Item> {
-        let mut result = BTreeMap::new();
-
-        for (_, item) in self {
-            result.insert(item.url(), item);
-        }
-
-        result
+        write!(
+            f,
+            "{}",
+            match *self {
+                Status::Read => "Read",
+                Status::Unread => "Unread",
+            }
+        )
     }
 }
 
