@@ -75,6 +75,22 @@ impl Display for Status {
     }
 }
 
+pub trait ByUrl {
+    fn by_url(&self) -> BTreeMap<&str, &Item>;
+}
+
+impl ByUrl for ReadingList {
+    fn by_url(&self) -> BTreeMap<&str, &Item> {
+        let mut result = BTreeMap::new();
+
+        for (_, item) in self {
+            result.insert(item.url(), item);
+        }
+
+        result
+    }
+}
+
 impl Item {
     pub fn url(&self) -> &str {
         self.resolved_url.as_ref().unwrap_or(&self.given_url)
