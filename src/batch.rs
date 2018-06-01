@@ -3,15 +3,16 @@ use std::env;
 use std::fs::File;
 use std::io::{BufReader, BufRead, Lines};
 
+use cleanup_url;
+use cli::*;
+
 pub struct BatchApp {
     pub client: Client,
+    pub cache_client: FileClient,
     url_id: BTreeMap<String, String>,
     clean_url_id: BTreeMap<String, String>,
     file_name: String,
 }
-
-use cleanup_url;
-use cli::*;
 
 impl Default for BatchApp {
     fn default() -> Self {
@@ -35,19 +36,22 @@ impl Default for BatchApp {
             Err(e) => panic!("It wasn't possible to initialize a Pocket cache\n{}", e),
         };
 
-        let reading_list = cache_client.list_all();
-
         let mut url_id = BTreeMap::new();
         let mut cleanurl_id = BTreeMap::new();
-        for (id, reading_item) in reading_list {
-            url_id.insert(reading_item.url().into(), id.clone());
-            cleanurl_id.insert(cleanup_url(reading_item.url()), id.clone());
+
+        {
+            let reading_list = cache_client.list_all();
+            for (id, reading_item) in reading_list {
+                url_id.insert(reading_item.url().into(), id.clone());
+                cleanurl_id.insert(cleanup_url(reading_item.url()), id.clone());
+            }
         }
 
         BatchApp {
             url_id: url_id,
             clean_url_id: cleanurl_id,
             client: client,
+            cache_client: cache_client,
             file_name: readlist_file_name,
         }
     }
