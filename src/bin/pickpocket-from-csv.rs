@@ -11,7 +11,7 @@ fn main() {
     let app = BatchApp::default();
 
     let csv_file_name = env::args()
-        .nth(1)
+        .nth(3)
         .expect("Expected an csv file as argument");
 
     let csv_reader = csv::Reader::from_path(csv_file_name);
@@ -21,11 +21,21 @@ fn main() {
 
     let cache_reading_list = app.cache_client.list_all();
 
+    let mut ignore_urls = BTreeSet::new();
+    for url_to_ignore in app.file_lines() {
+        let line = url_to_ignore.expect("couldnt read url to ignore");
+        ignore_urls.insert(line);
+    }
+
     for item in csv_reader.expect("couldnt read csv").records() {
         let item = item.expect("coudltn read line");
 
         let url = item.get(0).unwrap();
         let folder = item.get(3).unwrap();
+
+        if let Some(_) = ignore_urls.get(url) {
+            continue;
+        }
 
         match app.get(&url) {
             None => {
