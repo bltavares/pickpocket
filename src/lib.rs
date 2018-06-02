@@ -250,6 +250,12 @@ fn start_domain_from(url: &str) -> usize {
     }
 }
 
+fn cleanup_path(path: &str) -> &str {
+    path.trim_right_matches("index.html")
+        .trim_right_matches("index.php")
+        .trim_right_matches('/')
+}
+
 pub fn cleanup_url(url: &str) -> String {
     let parsed = Url::parse(url).expect("Could not parse cleanup url");
     let current_host = parsed.host_str().expect("Cleaned up an url without a host");
@@ -258,7 +264,7 @@ pub fn cleanup_url(url: &str) -> String {
     format!(
         "https://{}{}",
         fixup_blogspot(&current_host[starts_from..]),
-        parsed.path()
+        cleanup_path(parsed.path())
     )
 }
 
@@ -269,25 +275,25 @@ mod test {
     #[test]
     fn test_clean_url_hash() {
         let url_ = "http://example.com#asdfas.fsa";
-        assert_eq!(cleanup_url(url_), "https://example.com/");
+        assert_eq!(cleanup_url(url_), "https://example.com");
     }
 
     #[test]
     fn test_clean_url_query() {
         let url_ = "http://example.com?";
-        assert_eq!(cleanup_url(url_), "https://example.com/");
+        assert_eq!(cleanup_url(url_), "https://example.com");
     }
 
     #[test]
     fn test_clean_url_keep_same_url() {
         let url_ = "http://another.example.com";
-        assert_eq!(cleanup_url(url_), "https://another.example.com/");
+        assert_eq!(cleanup_url(url_), "https://another.example.com");
     }
 
     #[test]
     fn test_clean_url_keep_https() {
         let url = "https://another.example.com";
-        assert_eq!(cleanup_url(url), "https://another.example.com/");
+        assert_eq!(cleanup_url(url), "https://another.example.com");
     }
 
     #[test]
@@ -323,6 +329,33 @@ mod test {
         assert_eq!(
             cleanup_url(url),
             "https://this-is-a.blogspot.com/asdf/asdf/asdf"
+        );
+    }
+
+    #[test]
+    fn test_cleanup_urls_are_the_same() {
+        let url1 = cleanup_url("https://example.com/hello");
+        let url2 = cleanup_url("https://example.com/hello/");
+        assert_eq!(url1, url2);
+    }
+
+    #[test]
+    fn test_cleanup_urls_without_index() {
+        let url = "https://example.com/index.php";
+        assert_eq!(cleanup_url(url), "https://example.com");
+    }
+
+    #[test]
+    fn test_cleanup_urls_without_index_html() {
+        let url = "https://example.com/index.html";
+        assert_eq!(cleanup_url(url), cleanup_url("https://example.com/"));
+    }
+
+    #[test]
+    fn test_dot_on_files() {
+        assert_eq!(
+            cleanup_url("https://jenkins.io/2.0/index.html"),
+            cleanup_url("https://jenkins.io/2.0/")
         );
     }
 }
