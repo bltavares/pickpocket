@@ -212,7 +212,7 @@ impl Client {
             .header(ContentType::json())
             .header(Connection::close())
             .send()
-            .expect(&format!("Coulnd't make request with payload: {}", &payload));
+            .unwrap_or_else(|_| panic!("Coulnd't make request with payload: {}", &payload));
 
         let mut body = String::new();
         res.read_to_string(&mut body)

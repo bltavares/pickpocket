@@ -5,12 +5,12 @@ use hyper::Url;
 use hyper_native_tls::NativeTlsClient;
 use std::io::Read;
 
-const ENDPOINT: &'static str = "https://getpocket.com/v3";
-const REDIRECT_URL: &'static str = "https://getpocket.com";
+const ENDPOINT: &str = "https://getpocket.com/v3";
+const REDIRECT_URL: &str = "https://getpocket.com";
 
 pub fn url(method: &str) -> Url {
     let url = format!("{}{}", ENDPOINT, method);
-    Url::parse(&url).expect(&format!("Could not parse url: {}", url))
+    Url::parse(&url).unwrap_or_else(|_| panic!("Could not parse url: {}", url))
 }
 
 pub struct Client {
@@ -37,7 +37,7 @@ impl BeginAuthentication {
     pub fn request_authorization_code(self) -> AuthorizationRequest {
         let body = self.request();
         let code =
-            body.split('=').skip(1).next().expect(
+            body.split('=').nth(1).expect(
                 "Could not retrieve the authorization code from the authentication request",
             );
 
@@ -81,8 +81,7 @@ impl AuthorizationRequest {
         let body = self.request();
         let first_value = body
             .split('=')
-            .skip(1)
-            .next()
+            .nth(1)
             .expect("Could not extract authorization line from response");
         let code = first_value
             .split('&')
