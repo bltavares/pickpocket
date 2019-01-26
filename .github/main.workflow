@@ -5,13 +5,13 @@ workflow "on push" {
 
 action "clippy" {
   needs = ["rustfmt"]
-  uses = "bltavares/actions/clippy@rust-actions"
+  uses = "bltavares/actions/clippy@master"
   args = ["autofix"]
   secrets = ["GITHUB_TOKEN"]
 }
 
 action "rustfmt" {
-  uses = "bltavares/actions/rustfmt@rust-actions"
+  uses = "bltavares/actions/rustfmt@master"
   args = ["autofix"]
   secrets = ["GITHUB_TOKEN"]
 }
