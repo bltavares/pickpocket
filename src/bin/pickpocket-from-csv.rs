@@ -1,8 +1,8 @@
 extern crate csv;
 extern crate pickpocket;
 
-use std::env;
 use std::collections::BTreeSet;
+use std::env;
 
 use pickpocket::batch::BatchApp;
 use pickpocket::Status;

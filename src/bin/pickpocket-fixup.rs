@@ -1,7 +1,7 @@
 extern crate pickpocket;
 
-use std::collections::BTreeSet;
 use pickpocket::{FavoriteStatus, Status};
+use std::collections::BTreeSet;
 
 fn main() {
     let client = match pickpocket::cli::client_from_env_vars() {

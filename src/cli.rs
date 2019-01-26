@@ -2,9 +2,9 @@ use std::io::{BufReader, BufWriter};
 
 use bincode::{deserialize_from, serialize_into, Infinite};
 
-use flate2::Compression;
 use flate2::read::ZlibDecoder;
 use flate2::write::ZlibEncoder;
+use flate2::Compression;
 
 pub use auth::*;
 use ReadingList;

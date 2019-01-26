@@ -1,8 +1,8 @@
 use hyper;
 use hyper::header::{Connection, ContentType};
 use hyper::net::HttpsConnector;
-use hyper_native_tls::NativeTlsClient;
 use hyper::Url;
+use hyper_native_tls::NativeTlsClient;
 use std::io::Read;
 
 const ENDPOINT: &'static str = "https://getpocket.com/v3";
@@ -36,10 +36,10 @@ pub fn https_client() -> hyper::Client {
 impl BeginAuthentication {
     pub fn request_authorization_code(self) -> AuthorizationRequest {
         let body = self.request();
-        let code = body.split('=')
-            .skip(1)
-            .next()
-            .expect("Could not retrieve the authorization code from the authentication request");
+        let code =
+            body.split('=').skip(1).next().expect(
+                "Could not retrieve the authorization code from the authentication request",
+            );
 
         AuthorizationRequest {
             consumer_key: self.consumer_key,
@@ -79,7 +79,8 @@ impl AuthorizationRequest {
 
     pub fn request_authorized_code(self) -> Client {
         let body = self.request();
-        let first_value = body.split('=')
+        let first_value = body
+            .split('=')
             .skip(1)
             .next()
             .expect("Could not extract authorization line from response");
