@@ -13,12 +13,12 @@ extern crate hyper_native_tls;
 use hyper::header::{Connection, ContentType};
 use hyper::Url;
 use std::collections::BTreeMap;
-use std::io::Read;
 use std::fmt::{Display, Formatter, Result};
+use std::io::Read;
 
 mod auth;
-pub mod cli;
 pub mod batch;
+pub mod cli;
 pub use auth::*;
 
 const DEFAULT_COUNT: u32 = 5000;
@@ -181,7 +181,8 @@ impl Client {
             _ => "item_id",
         };
         let time = chrono::UTC::now().timestamp();
-        let actions: Vec<String> = ids.into_iter()
+        let actions: Vec<String> = ids
+            .into_iter()
             .map(|id| {
                 format!(
                     r##"{{ "action": "{}", "{}": "{}", "time": "{}" }}"##,
@@ -211,7 +212,7 @@ impl Client {
             .header(ContentType::json())
             .header(Connection::close())
             .send()
-            .expect(&format!("Coulnd't make request with payload: {}", &payload));
+            .unwrap_or_else(|_| panic!("Coulnd't make request with payload: {}", &payload));
 
         let mut body = String::new();
         res.read_to_string(&mut body)

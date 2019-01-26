@@ -1,8 +1,8 @@
 extern crate csv;
 extern crate pickpocket;
 
-use std::env;
 use std::collections::BTreeSet;
+use std::env;
 
 use pickpocket::batch::BatchApp;
 use pickpocket::Status;
@@ -33,7 +33,7 @@ fn main() {
         let url = item.get(0).unwrap();
         let folder = item.get(3).unwrap();
 
-        if let Some(_) = ignore_urls.get(url) {
+        if ignore_urls.get(url).is_some() {
             continue;
         }
 

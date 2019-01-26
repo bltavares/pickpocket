@@ -17,14 +17,10 @@ pub struct BatchApp {
 impl Default for BatchApp {
     fn default() -> Self {
         let readlist_file_name = env::args()
-            .skip(1)
-            .next()
+            .nth(1)
             .expect("Expected an reading list file as argument");
 
-        let cache_file_name = env::args()
-            .skip(2)
-            .next()
-            .expect("Expected an cache as argument");
+        let cache_file_name = env::args().nth(2).expect("Expected an cache as argument");
 
         let client = match client_from_env_vars() {
             Ok(client) => client,
@@ -37,21 +33,21 @@ impl Default for BatchApp {
         };
 
         let mut url_id = BTreeMap::new();
-        let mut cleanurl_id = BTreeMap::new();
+        let mut clean_url_id = BTreeMap::new();
 
         {
             let reading_list = cache_client.list_all();
             for (id, reading_item) in reading_list {
                 url_id.insert(reading_item.url().into(), id.clone());
-                cleanurl_id.insert(cleanup_url(reading_item.url()), id.clone());
+                clean_url_id.insert(cleanup_url(reading_item.url()), id.clone());
             }
         }
 
         BatchApp {
-            url_id: url_id,
-            clean_url_id: cleanurl_id,
-            client: client,
-            cache_client: cache_client,
+            url_id,
+            clean_url_id,
+            client,
+            cache_client,
             file_name: readlist_file_name,
         }
     }
@@ -69,8 +65,8 @@ impl BatchApp {
     }
 
     pub fn file_lines(&self) -> Lines<BufReader<File>> {
-        let file =
-            File::open(&self.file_name).expect(&format!("Couldn't open {}", &self.file_name));
+        let file = File::open(&self.file_name)
+            .unwrap_or_else(|_| panic!("Couldn't open {}", &self.file_name));
 
         BufReader::new(file).lines()
     }
