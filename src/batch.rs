@@ -20,9 +20,7 @@ impl Default for BatchApp {
             .nth(1)
             .expect("Expected an reading list file as argument");
 
-        let cache_file_name = env::args()
-            .nth(2)
-            .expect("Expected an cache as argument");
+        let cache_file_name = env::args().nth(2).expect("Expected an cache as argument");
 
         let client = match client_from_env_vars() {
             Ok(client) => client,
@@ -67,8 +65,8 @@ impl BatchApp {
     }
 
     pub fn file_lines(&self) -> Lines<BufReader<File>> {
-        let file =
-            File::open(&self.file_name).unwrap_or_else(|_| panic!("Couldn't open {}", &self.file_name));
+        let file = File::open(&self.file_name)
+            .unwrap_or_else(|_| panic!("Couldn't open {}", &self.file_name));
 
         BufReader::new(file).lines()
     }

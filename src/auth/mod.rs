@@ -36,10 +36,10 @@ pub fn https_client() -> hyper::Client {
 impl BeginAuthentication {
     pub fn request_authorization_code(self) -> AuthorizationRequest {
         let body = self.request();
-        let code =
-            body.split('=').nth(1).expect(
-                "Could not retrieve the authorization code from the authentication request",
-            );
+        let code = body
+            .split('=')
+            .nth(1)
+            .expect("Could not retrieve the authorization code from the authentication request");
 
         AuthorizationRequest {
             consumer_key: self.consumer_key,

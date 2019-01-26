@@ -30,8 +30,8 @@ pub fn client_from_env_vars() -> Result<Client, String> {
     })?;
 
     Ok(Client {
- consumer_key,
- authorization_code,
+        consumer_key,
+        authorization_code,
     })
 }
 
@@ -41,7 +41,7 @@ pub struct FileClient {
 
 impl FileClient {
     pub fn from_online(list: ReadingList) -> Self {
-        FileClient {  list }
+        FileClient { list }
     }
 
     pub fn from_cache(file_name: &str) -> Result<Self, String> {
