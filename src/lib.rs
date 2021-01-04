@@ -8,13 +8,11 @@ extern crate bincode;
 extern crate chrono;
 extern crate flate2;
 extern crate hyper;
-extern crate hyper_native_tls;
+extern crate hyper_tls;
 
-use hyper::header::{Connection, ContentType};
-use hyper::Url;
+use hyper::{body, Body, Method, Request, Uri};
 use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter, Result};
-use std::io::Read;
 
 mod auth;
 pub mod batch;
@@ -109,28 +107,28 @@ impl Item {
 }
 
 impl Client {
-    pub fn mark_as_read<'a, T>(&self, ids: T)
+    pub async fn mark_as_read<'a, T>(&self, ids: T)
     where
         T: IntoIterator<Item = &'a str>,
     {
-        self.modify(Action::Archive, ids);
+        self.modify(Action::Archive, ids).await;
     }
 
-    pub fn mark_as_favorite<'a, T>(&self, ids: T)
+    pub async fn mark_as_favorite<'a, T>(&self, ids: T)
     where
         T: IntoIterator<Item = &'a str>,
     {
-        self.modify(Action::Favorite, ids);
+        self.modify(Action::Favorite, ids).await;
     }
 
-    pub fn add_urls<'a, T>(&self, urls: T)
+    pub async fn add_urls<'a, T>(&self, urls: T)
     where
         T: IntoIterator<Item = &'a str>,
     {
-        self.modify(Action::Add, urls);
+        self.modify(Action::Add, urls).await;
     }
 
-    pub fn list_all(&self) -> ReadingList {
+    pub async fn list_all(&self) -> ReadingList {
         let mut reading_list: ReadingList = Default::default();
 
         let mut offset = 0;
@@ -152,7 +150,7 @@ impl Client {
                 (offset * DEFAULT_COUNT)
             );
 
-            let response = self.request(method, payload);
+            let response = self.request(method, payload).await;
             match parse_all_response(&response) {
                 ResponseState::NoMore => break,
                 ResponseState::Parsed(parsed_response) => {
@@ -166,7 +164,7 @@ impl Client {
         reading_list
     }
 
-    fn modify<'a, T>(&self, action: Action, ids: T)
+    async fn modify<'a, T>(&self, action: Action, ids: T)
     where
         T: IntoIterator<Item = &'a str>,
     {
@@ -200,24 +198,28 @@ impl Client {
             actions.join(", ")
         );
 
-        self.request(method, payload);
+        self.request(method, payload).await;
     }
 
-    fn request(&self, method: Url, payload: String) -> String {
+    async fn request(&self, uri: Uri, payload: String) -> String {
         let client = auth::https_client();
 
-        let mut res = client
-            .post(method)
-            .body(&payload)
-            .header(ContentType::json())
-            .header(Connection::close())
-            .send()
-            .unwrap_or_else(|_| panic!("Coulnd't make request with payload: {}", &payload));
+        let req = Request::builder()
+            .method(Method::POST)
+            .uri(uri)
+            .header("content-type", "application/json")
+            .header("connection", "close")
+            .body(Body::from(payload.clone()))
+            .unwrap();
 
-        let mut body = String::new();
-        res.read_to_string(&mut body)
-            .expect("Could not read the HTTP request's body");
-        body
+        let res = client
+            .request(req)
+            .await
+            .expect(&format!("Could not make request with payload: {}", &payload));
+
+        let body_bytes = body::to_bytes(res.into_body()).await.expect("Could not read the HTTP request's body");
+
+        String::from_utf8(body_bytes.to_vec()).expect("Response was not valid UTF-8")
     }
 }
 
@@ -258,8 +260,8 @@ fn cleanup_path(path: &str) -> &str {
 }
 
 pub fn cleanup_url(url: &str) -> String {
-    let parsed = Url::parse(url).expect("Could not parse cleanup url");
-    let current_host = parsed.host_str().expect("Cleaned up an url without a host");
+    let parsed: Uri = url.parse().expect("Could not parse cleanup url");
+    let current_host = parsed.host().expect("Cleaned up an url without a host");
     let starts_from = start_domain_from(current_host);
 
     format!(

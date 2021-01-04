@@ -4,7 +4,8 @@ use std::collections::BTreeSet;
 
 use pickpocket::batch::BatchApp;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let app = BatchApp::default();
 
     let mut urls: BTreeSet<String> = BTreeSet::new();
@@ -19,5 +20,5 @@ fn main() {
         }
     }
 
-    app.client.add_urls(urls.iter().map(AsRef::as_ref));
+    app.client.add_urls(urls.iter().map(AsRef::as_ref)).await;
 }

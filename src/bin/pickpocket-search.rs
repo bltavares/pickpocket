@@ -2,7 +2,8 @@ extern crate pickpocket;
 
 use std::env;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let url = env::args().nth(1).expect("Expected an needle as argument");
 
     let client = match pickpocket::cli::client_from_env_vars() {
@@ -10,7 +11,7 @@ fn main() {
         Err(e) => panic!("It wasn't possible to initialize a Pocket client\n{}", e),
     };
 
-    let reading_list = client.list_all();
+    let reading_list = client.list_all().await;
     for (id, reading_item) in &reading_list {
         if reading_item.url().contains(&url) {
             println!(

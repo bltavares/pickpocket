@@ -5,7 +5,8 @@ use std::collections::BTreeSet;
 use pickpocket::batch::BatchApp;
 use pickpocket::Status;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let app = BatchApp::default();
 
     let mut ids: BTreeSet<&str> = BTreeSet::new();
@@ -27,5 +28,5 @@ fn main() {
         }
     }
 
-    app.client.mark_as_read(ids);
+    app.client.mark_as_read(ids).await;
 }
