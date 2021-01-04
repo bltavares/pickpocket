@@ -254,9 +254,9 @@ fn start_domain_from(url: &str) -> usize {
 }
 
 fn cleanup_path(path: &str) -> &str {
-    path.trim_right_matches("index.html")
-        .trim_right_matches("index.php")
-        .trim_right_matches('/')
+    path.trim_end_matches("index.html")
+        .trim_end_matches("index.php")
+        .trim_end_matches('/')
 }
 
 pub fn cleanup_url(url: &str) -> String {
