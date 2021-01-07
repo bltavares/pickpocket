@@ -1,5 +1,3 @@
-extern crate pickpocket;
-
 use pickpocket::{FavoriteStatus, Status};
 use std::collections::BTreeSet;
 

@@ -1,5 +1,3 @@
-extern crate pickpocket;
-
 use std::env;
 
 fn main() {

@@ -1,5 +1,3 @@
-extern crate pickpocket;
-
 use std::collections::BTreeSet;
 
 use pickpocket::batch::BatchApp;

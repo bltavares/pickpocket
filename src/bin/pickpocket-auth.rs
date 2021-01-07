@@ -1,5 +1,3 @@
-extern crate pickpocket;
-
 use std::env;
 use std::io;
 use std::io::Write;

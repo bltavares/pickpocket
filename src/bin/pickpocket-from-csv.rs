@@ -1,6 +1,3 @@
-extern crate csv;
-extern crate pickpocket;
-
 use std::collections::BTreeSet;
 use std::env;
 

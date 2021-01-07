@@ -1,16 +1,5 @@
-extern crate serde;
-extern crate serde_json;
-
-#[macro_use]
-extern crate serde_derive;
-
-extern crate bincode;
-extern crate chrono;
-extern crate flate2;
-extern crate hyper;
-extern crate hyper_rustls;
-
 use hyper::{body, Body, Method, Request, Uri};
+use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter, Result};
 
