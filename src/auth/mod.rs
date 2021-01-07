@@ -1,5 +1,5 @@
 use hyper::{body, Body, Method, Request, Uri};
-use hyper_tls::HttpsConnector;
+use hyper_rustls::HttpsConnector;
 
 const ENDPOINT: &str = "https://getpocket.com/v3";
 const REDIRECT_URL: &str = "https://getpocket.com";
@@ -25,7 +25,7 @@ pub struct AuthorizationRequest {
 }
 
 pub fn https_client() -> hyper::Client<HttpsConnector<hyper::client::HttpConnector>> {
-    let https = HttpsConnector::new();
+    let https = HttpsConnector::with_native_roots();
     hyper::Client::builder().build::<_, hyper::Body>(https)
 }
 

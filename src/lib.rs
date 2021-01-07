@@ -8,7 +8,7 @@ extern crate bincode;
 extern crate chrono;
 extern crate flate2;
 extern crate hyper;
-extern crate hyper_tls;
+extern crate hyper_rustls;
 
 use hyper::{body, Body, Method, Request, Uri};
 use std::collections::BTreeMap;
@@ -212,12 +212,14 @@ impl Client {
             .body(Body::from(payload.clone()))
             .unwrap();
 
-        let res = client
-            .request(req)
-            .await
-            .expect(&format!("Could not make request with payload: {}", &payload));
+        let res = client.request(req).await.expect(&format!(
+            "Could not make request with payload: {}",
+            &payload
+        ));
 
-        let body_bytes = body::to_bytes(res.into_body()).await.expect("Could not read the HTTP request's body");
+        let body_bytes = body::to_bytes(res.into_body())
+            .await
+            .expect("Could not read the HTTP request's body");
 
         String::from_utf8(body_bytes.to_vec()).expect("Response was not valid UTF-8")
     }
