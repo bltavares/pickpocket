@@ -1,4 +1,4 @@
-use hyper::{Body, Method, Request, Uri, body, header};
+use hyper::{body, header, Body, Method, Request, Uri};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter, Result};
@@ -167,7 +167,7 @@ impl Client {
             Action::Add => "url",
             _ => "item_id",
         };
-        let time = chrono::UTC::now().timestamp();
+        let time = chrono::Utc::now().timestamp();
         let actions: Vec<String> = ids
             .into_iter()
             .map(|id| {
@@ -201,10 +201,10 @@ impl Client {
             .body(Body::from(payload.clone()))
             .unwrap();
 
-        let res = client.request(req).await.unwrap_or_else(|_| panic!(
-            "Could not make request with payload: {}",
-            &payload
-        ));
+        let res = client
+            .request(req)
+            .await
+            .unwrap_or_else(|_| panic!("Could not make request with payload: {}", &payload));
 
         let body_bytes = body::to_bytes(res.into_body())
             .await
