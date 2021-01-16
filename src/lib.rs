@@ -375,7 +375,7 @@ fn test_decoding_empty_object_list() {
 fn test_decoding_empty_pocket_list() {
     let response = r#"{ "list": []}"#;
     match parse_all_response(&response) {
-        ResponseState::Parsed(_) => (),
+        ResponseState::NoMore => (),
         _ => panic!("This should signal an empty list"),
     }
 }
