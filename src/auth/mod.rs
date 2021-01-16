@@ -1,4 +1,4 @@
-use hyper::{body, Body, Method, Request, Uri};
+use hyper::{Body, Method, Request, Uri, body, header};
 use hyper_rustls::HttpsConnector;
 
 const ENDPOINT: &str = "https://getpocket.com/v3";
@@ -49,8 +49,8 @@ impl BeginAuthentication {
         let req = Request::builder()
             .method(Method::POST)
             .uri(url("/oauth/request"))
-            .header("content-type", "application/x-www-form-urlencoded")
-            .header("connection", "close")
+            .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .header(header::CONNECTION, "close")
             .body(Body::from(format!(
                 "consumer_key={}&redirect_uri={}",
                 &self.consumer_key, REDIRECT_URL
@@ -102,8 +102,8 @@ impl AuthorizationRequest {
         let req = Request::builder()
             .method(Method::POST)
             .uri(url("/oauth/authorize"))
-            .header("content-type", "application/x-www-form-urlencoded")
-            .header("connection", "close")
+            .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .header(header::CONNECTION, "close")
             .body(Body::from(format!(
                 "consumer_key={}&code={}",
                 &self.consumer_key, &self.request_code

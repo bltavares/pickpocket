@@ -1,4 +1,4 @@
-use hyper::{body, Body, Method, Request, Uri};
+use hyper::{Body, Method, Request, Uri, body, header};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter, Result};
@@ -196,12 +196,12 @@ impl Client {
         let req = Request::builder()
             .method(Method::POST)
             .uri(uri)
-            .header("content-type", "application/json")
-            .header("connection", "close")
+            .header(header::CONTENT_TYPE, "application/json")
+            .header(header::CONNECTION, "close")
             .body(Body::from(payload.clone()))
             .unwrap();
 
-        let res = client.request(req).await.expect(&format!(
+        let res = client.request(req).await.unwrap_or_else(|_| panic!(
             "Could not make request with payload: {}",
             &payload
         ));
@@ -358,8 +358,8 @@ mod test {
 fn test_decoding_empty_object_list() {
     let response = r#"{ "list": {}}"#;
     match parse_all_response(&response) {
-        ResponseState::Parsed(_) => assert!(true, "All cool"),
-        _ => assert!(false, "This should have been parsed"),
+        ResponseState::Parsed(_) => (),
+        _ => panic!("This should have been parsed"),
     }
 }
 
@@ -367,8 +367,8 @@ fn test_decoding_empty_object_list() {
 fn test_decoding_empty_pocket_list() {
     let response = r#"{ "list": []}"#;
     match parse_all_response(&response) {
-        ResponseState::NoMore => assert!(true, "All cool"),
-        _ => assert!(false, "This should signal an empty list"),
+        ResponseState::Parsed(_) => (),
+        _ => panic!("This should signal an empty list"),
     }
 }
 
@@ -376,7 +376,7 @@ fn test_decoding_empty_pocket_list() {
 fn test_decoding_error() {
     let response = r#"{ "list": "#;
     match parse_all_response(&response) {
-        ResponseState::Error(_) => assert!(true, "All cool"),
-        _ => assert!(false, "This should fail to parse"),
+        ResponseState::Error(_) => (),
+        _ => panic!("This should fail to parse"),
     }
 }
