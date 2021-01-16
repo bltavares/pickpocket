@@ -256,15 +256,18 @@ fn cleanup_path(path: &str) -> &str {
 }
 
 pub fn cleanup_url(url: &str) -> String {
-    let parsed: Uri = url.parse().expect("Could not parse cleanup url");
-    let current_host = parsed.host().expect("Cleaned up an url without a host");
-    let starts_from = start_domain_from(current_host);
+    if let Ok(parsed) = url.parse::<Uri>() {
+        let current_host = parsed.host().expect("Cleaned up an url without a host");
+        let starts_from = start_domain_from(current_host);
 
-    format!(
-        "https://{}{}",
-        fixup_blogspot(&current_host[starts_from..]),
-        cleanup_path(parsed.path())
-    )
+        format!(
+            "https://{}{}",
+            fixup_blogspot(&current_host[starts_from..]),
+            cleanup_path(parsed.path())
+        )
+    } else {
+        url.into()
+    }
 }
 
 #[cfg(test)]
