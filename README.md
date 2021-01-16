@@ -1,5 +1,12 @@
 # pickpocket [![Build Status](https://travis-ci.org/bltavares/pickpocket.svg?branch=master)](https://travis-ci.org/bltavares/pickpocket)
+
 Pocket command line manager
+
+Set of utility commands to manage and organize your library, also available as crate.
+
+Useful for scripting your own commands. See [this aliases](https://github.com/bltavares/dot-files/blob/master/zsh/config/06_pickpocket.zsh) for examples.
+
+**Tags**: `Dormant project | Personal utility`
 
 ## Instalation
 
@@ -14,6 +21,7 @@ cargo install --git https://github.com/bltavares/pickpocket
 There is no pre-built binaries at this moment.
 
 ## Documentation
+
 http://docs.bltavares.link/pickpocket
 
 ## Building, testing, and others
