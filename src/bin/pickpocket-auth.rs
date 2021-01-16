@@ -1,5 +1,3 @@
-extern crate pickpocket;
-
 use std::env;
 use std::io;
 use std::io::Write;
@@ -25,11 +23,13 @@ fn consumer_key() -> String {
     }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let authorization_request = BeginAuthentication {
         consumer_key: consumer_key(),
     }
-    .request_authorization_code();
+    .request_authorization_code()
+    .await;
 
     println!("Please visit {}", authorization_request.authorization_url());
     println!("Press enter after authorizing with Pocket");
@@ -39,7 +39,7 @@ fn main() {
         .read_line(&mut input)
         .expect("Could not read authorizing code from terminal");
 
-    let auth = authorization_request.request_authorized_code();
+    let auth = authorization_request.request_authorized_code().await;
     print_auth_as_env_variables(&auth);
 }
 

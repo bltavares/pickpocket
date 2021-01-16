@@ -1,15 +1,14 @@
-extern crate pickpocket;
-
 use pickpocket::{FavoriteStatus, Status};
 use std::collections::BTreeSet;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let client = match pickpocket::cli::client_from_env_vars() {
         Ok(client) => client,
         Err(e) => panic!("It wasn't possible to initialize a Pocket client\n{}", e),
     };
 
-    let reading_list = client.list_all();
+    let reading_list = client.list_all().await;
     let mut favorites: BTreeSet<&str> = BTreeSet::new();
     let mut read: BTreeSet<&str> = BTreeSet::new();
 
@@ -23,6 +22,6 @@ fn main() {
         }
     }
 
-    client.mark_as_favorite(favorites);
-    client.mark_as_read(read);
+    client.mark_as_favorite(favorites).await;
+    client.mark_as_read(read).await;
 }

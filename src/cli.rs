@@ -6,8 +6,8 @@ use flate2::read::ZlibDecoder;
 use flate2::write::ZlibEncoder;
 use flate2::Compression;
 
-pub use auth::*;
-use ReadingList;
+pub use crate::auth::*;
+use crate::ReadingList;
 
 use std::env;
 use std::fs::File;

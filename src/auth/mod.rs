@@ -1,16 +1,13 @@
-use hyper;
-use hyper::header::{Connection, ContentType};
-use hyper::net::HttpsConnector;
-use hyper::Url;
-use hyper_native_tls::NativeTlsClient;
-use std::io::Read;
+use hyper::{body, Body, Method, Request, Uri};
+use hyper_rustls::HttpsConnector;
 
 const ENDPOINT: &str = "https://getpocket.com/v3";
 const REDIRECT_URL: &str = "https://getpocket.com";
 
-pub fn url(method: &str) -> Url {
+pub fn url(method: &str) -> Uri {
     let url = format!("{}{}", ENDPOINT, method);
-    Url::parse(&url).unwrap_or_else(|_| panic!("Could not parse url: {}", url))
+    url.parse()
+        .unwrap_or_else(|_| panic!("Could not parse url: {}", url))
 }
 
 pub struct Client {
@@ -27,15 +24,14 @@ pub struct AuthorizationRequest {
     request_code: String,
 }
 
-pub fn https_client() -> hyper::Client {
-    let ssl = NativeTlsClient::new().expect("Could not aquire a Native TLS connector");
-    let connector = HttpsConnector::new(ssl);
-    hyper::Client::with_connector(connector)
+pub fn https_client() -> hyper::Client<HttpsConnector<hyper::client::HttpConnector>> {
+    let https = HttpsConnector::with_native_roots();
+    hyper::Client::builder().build::<_, hyper::Body>(https)
 }
 
 impl BeginAuthentication {
-    pub fn request_authorization_code(self) -> AuthorizationRequest {
-        let body = self.request();
+    pub async fn request_authorization_code(self) -> AuthorizationRequest {
+        let body = self.request().await;
         let code = body
             .split('=')
             .nth(1)
@@ -47,25 +43,30 @@ impl BeginAuthentication {
         }
     }
 
-    fn request(&self) -> String {
+    async fn request(&self) -> String {
         let client = https_client();
 
-        let method = url("/oauth/request");
-        let mut res = client
-            .post(method)
-            .body(&format!(
+        let req = Request::builder()
+            .method(Method::POST)
+            .uri(url("/oauth/request"))
+            .header("content-type", "application/x-www-form-urlencoded")
+            .header("connection", "close")
+            .body(Body::from(format!(
                 "consumer_key={}&redirect_uri={}",
                 &self.consumer_key, REDIRECT_URL
-            ))
-            .header(ContentType::form_url_encoded())
-            .header(Connection::close())
-            .send()
+            )))
+            .unwrap();
+
+        let res = client
+            .request(req)
+            .await
             .expect("Could not request OAuth authorization");
 
-        let mut body = String::new();
-        res.read_to_string(&mut body)
-            .expect("Could not read OAuth request body");
-        body
+        let body_bytes = body::to_bytes(res.into_body())
+            .await
+            .expect("Could not read OAuth response body");
+
+        String::from_utf8(body_bytes.to_vec()).expect("Response was not valid UTF-8")
     }
 }
 
@@ -77,8 +78,8 @@ impl AuthorizationRequest {
         )
     }
 
-    pub fn request_authorized_code(self) -> Client {
-        let body = self.request();
+    pub async fn request_authorized_code(self) -> Client {
+        let body = self.request().await;
         let first_value = body
             .split('=')
             .nth(1)
@@ -95,24 +96,29 @@ impl AuthorizationRequest {
         }
     }
 
-    fn request(&self) -> String {
+    async fn request(&self) -> String {
         let client = https_client();
 
-        let method = url("/oauth/authorize");
-        let mut res = client
-            .post(method)
-            .body(&format!(
+        let req = Request::builder()
+            .method(Method::POST)
+            .uri(url("/oauth/authorize"))
+            .header("content-type", "application/x-www-form-urlencoded")
+            .header("connection", "close")
+            .body(Body::from(format!(
                 "consumer_key={}&code={}",
                 &self.consumer_key, &self.request_code
-            ))
-            .header(ContentType::form_url_encoded())
-            .header(Connection::close())
-            .send()
+            )))
+            .unwrap();
+
+        let res = client
+            .request(req)
+            .await
             .expect("Could not make authorization request");
 
-        let mut body = String::new();
-        res.read_to_string(&mut body)
-            .expect("Could not read authorization body response");
-        body
+        let body_bytes = body::to_bytes(res.into_body())
+            .await
+            .expect("Could not read authorization response body");
+
+        String::from_utf8(body_bytes.to_vec()).expect("Response was not valid UTF-8")
     }
 }

@@ -1,13 +1,11 @@
-extern crate csv;
-extern crate pickpocket;
-
 use std::collections::BTreeSet;
 use std::env;
 
 use pickpocket::batch::BatchApp;
 use pickpocket::Status;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let app = BatchApp::default();
 
     let csv_file_name = env::args()
@@ -59,5 +57,5 @@ fn main() {
         println!("{}", url);
     }
 
-    app.client.mark_as_read(read_ids);
+    app.client.mark_as_read(read_ids).await;
 }

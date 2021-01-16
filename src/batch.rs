@@ -3,8 +3,8 @@ use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
 
-use cleanup_url;
-use cli::*;
+use crate::cleanup_url;
+use crate::cli::*;
 
 pub struct BatchApp {
     pub client: Client,
