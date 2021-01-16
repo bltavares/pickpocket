@@ -66,7 +66,12 @@ impl Display for Status {
 
 impl Item {
     pub fn url(&self) -> &str {
-        self.resolved_url.as_ref().unwrap_or(&self.given_url)
+        if let Some(resolved) = &self.resolved_url {
+            if !resolved.is_empty() {
+                return resolved;
+            }
+        }
+        &self.given_url
     }
 
     pub fn title(&self) -> &str {
