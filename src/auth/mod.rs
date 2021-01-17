@@ -1,4 +1,4 @@
-use hyper::{Body, Method, Request, Uri, body, header};
+use hyper::{body, header, Body, Method, Request, Uri};
 use hyper_rustls::HttpsConnector;
 
 const ENDPOINT: &str = "https://getpocket.com/v3";

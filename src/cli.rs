@@ -65,7 +65,6 @@ impl FileClient {
 
         let writer = BufWriter::new(file);
         let mut encoder = ZlibEncoder::new(writer, Compression::best());
-        serialize_into(&mut encoder, &self.list)
-            .map_err(|_| "Failed to encode the content".into())
+        serialize_into(&mut encoder, &self.list).map_err(|_| "Failed to encode the content".into())
     }
 }

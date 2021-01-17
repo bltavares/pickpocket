@@ -13,5 +13,5 @@ hyper-rustls = "0.22"
 serde = "1.0.119"
 serde_json = "1.0.61"
 serde_derive = "1.0.119"
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tokio = { version = "1.0.2", features = ["rt-multi-thread", "macros"] }
 csv = "1.1"

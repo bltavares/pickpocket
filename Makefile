@@ -1,5 +1,5 @@
 CARGO := cargo
-CLIPPY_COMMAND := cargo +nightly clippy
+CLIPPY_COMMAND := cargo clippy -- -D warning
 
 BINARIES := $(patsubst %.rs,%,$(notdir $(wildcard src/bin/*.rs)))
 BINARIES_CHECK_TARGETS := $(addprefix check-,$(BINARIES))
@@ -41,7 +41,7 @@ clean:
 
 .PHONY: fmt # Formats the source files using rustfmt
 fmt:
-	$(CARGO) fmt -- --write-mode overwrite
+	$(CARGO) fmt
 
 .PHONY: help # Shows the acailable tasks
 help:
