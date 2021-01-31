@@ -41,8 +41,7 @@ async fn main() {
             }
             Some(id) => {
                 let pocket_item = cache_reading_list.get(id).expect("cant locate id");
-                if pocket_item.status() == Status::Unread
-                    && (folder == "Archive" || folder == "Done")
+                if pocket_item.status == Status::Unread && (folder == "Archive" || folder == "Done")
                 {
                     read_ids.insert(id);
                 }

@@ -16,7 +16,7 @@ fn main() {
             url = reading_item.url(),
             clean = pickpocket::cleanup_url(reading_item.url()),
             title = reading_item.title(),
-            status = reading_item.status()
+            status = reading_item.status
         );
     }
 }

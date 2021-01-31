@@ -13,11 +13,11 @@ async fn main() {
     let mut read: BTreeSet<&str> = BTreeSet::new();
 
     for (id, reading_item) in &reading_list {
-        if reading_item.favorite() == FavoriteStatus::Favorited {
+        if reading_item.favorite == FavoriteStatus::Favorited {
             favorites.insert(id);
         }
 
-        if reading_item.status() == Status::Read {
+        if reading_item.status == Status::Read {
             read.insert(id);
         }
     }

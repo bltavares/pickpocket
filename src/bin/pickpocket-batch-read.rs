@@ -16,7 +16,7 @@ async fn main() {
         match app.get(&url as &str) {
             Some(id) => {
                 let item = cache_reading_list.get(id).expect("cant locate id");
-                if item.status() == Status::Unread {
+                if item.status == Status::Unread {
                     ids.insert(id);
                 } else {
                     println!("Url {} already marked as read", url);
