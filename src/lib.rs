@@ -1,6 +1,5 @@
-use hyper::{body, header, Body, Method, Request, Uri};
 use serde_derive::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::fmt::{Display, Formatter, Result};
 
 mod auth;
@@ -10,7 +9,7 @@ pub use auth::*;
 
 const DEFAULT_COUNT: u32 = 5000;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, bincode::Decode, bincode::Encode)]
 pub struct Item {
     given_url: String,
     resolved_url: Option<String>,
@@ -20,7 +19,7 @@ pub struct Item {
     status: String,
 }
 
-pub type ReadingList = BTreeMap<String, Item>;
+pub type ReadingList = HashMap<String, Item>;
 
 #[derive(Deserialize)]
 struct ReadingListResponse {
@@ -195,27 +194,17 @@ impl Client {
         self.request(method, payload).await;
     }
 
-    async fn request(&self, uri: Uri, payload: String) -> String {
-        let client = auth::https_client();
-
-        let req = Request::builder()
-            .method(Method::POST)
-            .uri(uri)
-            .header(header::CONTENT_TYPE, "application/json")
-            .header(header::CONNECTION, "close")
-            .body(Body::from(payload.clone()))
-            .unwrap();
-
-        let res = client
-            .request(req)
+    async fn request(&self, uri: reqwest::Url, payload: String) -> String {
+        let res = auth::https_client()
+            .post(uri)
+            .header("Content-Type", "application/json")
+            .header("Connection", "close")
+            .body(payload.clone())
+            .send()
             .await
             .unwrap_or_else(|_| panic!("Could not make request with payload: {}", &payload));
 
-        let body_bytes = body::to_bytes(res.into_body())
-            .await
-            .expect("Could not read the HTTP request's body");
-
-        String::from_utf8(body_bytes.to_vec()).expect("Response was not valid UTF-8")
+        res.text().await.expect("Response was not valid UTF-8")
     }
 }
 
@@ -256,9 +245,12 @@ fn cleanup_path(path: &str) -> &str {
 }
 
 pub fn cleanup_url(url: &str) -> String {
-    if let Ok(parsed) = url.parse::<Uri>() {
-        let current_host = parsed.host().expect("Cleaned up an url without a host");
-        let starts_from = start_domain_from(current_host);
+    if let Ok(parsed) = url.parse::<reqwest::Url>() {
+        let current_host = format!(
+            "{}",
+            parsed.host().expect("Cleaned up an url without a host")
+        );
+        let starts_from = start_domain_from(&current_host);
 
         format!(
             "https://{}{}",

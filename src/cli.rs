@@ -1,6 +1,6 @@
 use std::io::{BufReader, BufWriter};
 
-use bincode::{deserialize_from, serialize_into};
+use bincode::{config, decode_from_std_read, encode_into_std_write};
 
 use flate2::read::ZlibDecoder;
 use flate2::write::ZlibEncoder;
@@ -50,7 +50,7 @@ impl FileClient {
         let reader = BufReader::new(file);
         let mut decoder = ZlibDecoder::new(reader);
 
-        let parsed = deserialize_from(&mut decoder)
+        let parsed = decode_from_std_read(&mut decoder, config::standard())
             .map_err(|_| format!("Could not read content from file: {}", &file_name))?;
 
         Ok(FileClient { list: parsed })
@@ -60,11 +60,12 @@ impl FileClient {
         &self.list
     }
 
-    pub fn write_cache(&self, file_name: &str) -> Result<(), String> {
+    pub fn write_cache(&self, file_name: &str) -> Result<usize, String> {
         let file = File::create(&file_name).map_err(|_| format!("Couldn't open {}", &file_name))?;
 
         let writer = BufWriter::new(file);
         let mut encoder = ZlibEncoder::new(writer, Compression::best());
-        serialize_into(&mut encoder, &self.list).map_err(|_| "Failed to encode the content".into())
+        encode_into_std_write(&self.list, &mut encoder, config::standard())
+            .map_err(|_| "Failed to encode the content".into())
     }
 }
